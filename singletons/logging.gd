@@ -6,8 +6,16 @@ onready var filepath: String = "res://log.txt"
 
 
 func _ready() -> void:
-	file.open(filepath, File.READ_WRITE)
-	file.seek_end(-1)
+	var error: int
+	if file.file_exists(filepath):
+		error = file.open(filepath, File.READ_WRITE)
+	else:
+		error = file.open(filepath, File.WRITE)
+	
+	if error != OK:
+		print('[Error]: Could not open a logging file.')
+	else:
+		file.seek_end(-1)
 
 
 func debug(message: String) -> void:
