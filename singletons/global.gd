@@ -26,8 +26,7 @@ func _initialize_Steam() -> void:
 	IS_ONLINE = Steam.loggedOn()
 	STEAM_ID = Steam.getSteamID()
 	IS_OWNED = Steam.isSubscribed()
-
-	# Check if account owns the game
+	
 	if IS_OWNED == false:
-		Logging.error("User does not own this game.")
-		self.get_tree().quit()
+		print("User does not own this game.")
+		get_tree().quit()

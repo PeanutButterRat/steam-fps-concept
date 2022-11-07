@@ -16,12 +16,27 @@ config/icon="res://resources/icon.png"
 
 [autoload]
 
-Logging="*res://singletons/logging.gd"
+Logging="res://singletons/logging.gd"
 Global="*res://singletons/global.gd"
+
+[debug]
+
+gdscript/warnings/return_value_discarded=false
+
+[display]
+
+window/size/width=1920
+window/size/height=1080
+window/size/test_width=1024
+window/size/test_height=600
 
 [gui]
 
 common/drop_mouse_on_gui_input_disabled=true
+
+[logging]
+
+file_logging/enable_file_logging=true
 
 [physics]
 
