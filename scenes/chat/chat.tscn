@@ -35,6 +35,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 0
 max_length = 50
 placeholder_text = "Enter message..."
+caret_blink = true
 
 [node name="Send" type="Button" parent="Background/OuterMargins/VerticalContainer/MessageLine"]
 margin_left = 1857.0
@@ -48,6 +49,7 @@ margin_top = 28.0
 margin_right = 1900.0
 margin_bottom = 1060.0
 size_flags_vertical = 7
+scroll_following = true
 
 [connection signal="text_entered" from="Background/OuterMargins/VerticalContainer/MessageLine/Message" to="." method="_on_Message_text_entered"]
 [connection signal="pressed" from="Background/OuterMargins/VerticalContainer/MessageLine/Send" to="." method="_on_Send_pressed"]
