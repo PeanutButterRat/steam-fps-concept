@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://scenes/gui/steam_player_entry/steam_player_entry.gd" type="Script" id=1]
+
+[node name="SteamPlayerEntry" type="Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="KickButton" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+margin_right = 38.0
+margin_bottom = 810.0
+text = "Kick"
+
+[node name="PlayerName" type="Label" parent="HBoxContainer"]
+unique_name_in_owner = true
+margin_top = 398.0
+margin_right = 1383.0
+margin_bottom = 412.0
+size_flags_horizontal = 3
+text = "Applecrisp Eric"
+align = 1
+
+[node name="ViewProfile" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+margin_left = 1387.0
+margin_right = 1440.0
+margin_bottom = 810.0
+text = "Profile"
+
+[node name="KickConfirmation" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[connection signal="pressed" from="HBoxContainer/KickButton" to="." method="_on_KickButton_pressed"]
+[connection signal="pressed" from="HBoxContainer/ViewProfile" to="." method="_on_ViewProfile_pressed"]
+[connection signal="pressed" from="KickConfirmation" to="." method="_on_KickConfirmation_pressed"]

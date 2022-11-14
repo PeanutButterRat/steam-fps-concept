@@ -19,7 +19,7 @@ func _ready() -> void:
 
 
 func debug(message: String) -> void:
-	file.store_string('[debug] %s: %s' % [Time.get_time_string_from_system(), message])
+	file.store_string('[ debug ] %s: %s' % [Time.get_time_string_from_system(), message])
 
 
 func warn(message: String) -> void:
@@ -27,7 +27,7 @@ func warn(message: String) -> void:
 
 
 func error(message: String) -> void:
-	file.store_string('[ERROR] %s: %s' % [Time.get_time_string_from_system(), message])
+	file.store_string('[ ERROR ] %s: %s' % [Time.get_time_string_from_system(), message])
 
 
 func _exit_tree():

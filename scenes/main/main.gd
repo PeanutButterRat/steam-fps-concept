@@ -1,26 +1,37 @@
 extends Node
 
 
+export var LobbyScene: PackedScene
+export var WorldScene: PackedScene
+
+var world: Spatial
+var lobby: Control
 
 
 func _ready() -> void:
-	# Check for command line arguments
+	var packet_processor: Object = funcref(self, "_on_Global_started_game")
+	Global.register_func_ref(packet_processor, 'started_game')
+	
 	_check_Command_Line()
+	
+	if lobby == null:
+		lobby = LobbyScene.instance()
+		add_child(lobby)
 
 
 func _check_Command_Line() -> void:
 	var ARGUMENTS: Array = OS.get_cmdline_args()
-
-	# There are arguments to process
+	
 	if ARGUMENTS.size() > 0:
+	 # A Steam connection argument and lobby invite exists.
+		if ARGUMENTS[0] == "+connect_lobby" and int(ARGUMENTS[1]) > 0:
+			print("Lobby ID from command line: " + str(ARGUMENTS[1]))
+			lobby = LobbyScene.instance()
+			add_child(lobby)
+			Global._join_Lobby(int(ARGUMENTS[1]))
 
-		# A Steam connection argument exists
-		if ARGUMENTS[0] == "+connect_lobby":
-		
-			# Lobby invite exists so try to connect to it
-			if int(ARGUMENTS[1]) > 0:
 
-				# At this point, you'll probably want to change scenes
-				# Something like a loading into lobby screen
-				print("CMD Line Lobby ID: "+str(ARGUMENTS[1]))
-				#_join_Lobby(int(ARGUMENTS[1]))
+func _on_Global_started_game(_packet: Dictionary):
+	world = WorldScene.instance()
+	add_child(world)
+	lobby.queue_free()
