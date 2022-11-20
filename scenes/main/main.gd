@@ -10,7 +10,7 @@ var lobby: Control
 
 func _ready() -> void:
 	var packet_processor: Object = funcref(self, "_on_Global_started_game")
-	Global.register_func_ref(packet_processor, 'started_game')
+	Global.register_callback(packet_processor, Global.MESSAGE_STARTED_GAME)
 	
 	_check_Command_Line()
 	
@@ -22,10 +22,9 @@ func _ready() -> void:
 func _check_Command_Line() -> void:
 	var ARGUMENTS: Array = OS.get_cmdline_args()
 	
-	if ARGUMENTS.size() > 0:
-	 # A Steam connection argument and lobby invite exists.
+	if ARGUMENTS.size() > 0:  # A Steam connection argument and lobby invite exists.
 		if ARGUMENTS[0] == "+connect_lobby" and int(ARGUMENTS[1]) > 0:
-			print("Lobby ID from command line: " + str(ARGUMENTS[1]))
+			Logging.debug('Joining command line invite.')
 			lobby = LobbyScene.instance()
 			add_child(lobby)
 			Global._join_Lobby(int(ARGUMENTS[1]))

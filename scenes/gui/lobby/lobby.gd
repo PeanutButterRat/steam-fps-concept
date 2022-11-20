@@ -13,21 +13,20 @@ func _ready() -> void:
 
 
 func _on_Create_pressed() -> void:
-	if Global.LOBBY_ID == 0:
+	if Global.lobby_id == 0:
 		var lobby_name: String = lobby_name_edit.text.strip_edges()
 		lobby_name_edit.clear()
 		
-		if lobby_name.empty():
-			lobby_name = Global.STEAM_USERNAME + "'s Lobby"
+		if lobby_name.empty(): lobby_name = Global.STEAM_USERNAME + "'s Lobby"
 		Global.lobby_name = lobby_name
 		
-		Steam.createLobby(Global.LOBBY_VISIBILITY.PUBLIC, Global.LOBBY_MAX_MEMBERS)
+		Steam.createLobby(Global.LOBBY_VISIBILITY.PUBLIC, Global.lobby_max_members)
 
 
 func _on_Find_pressed() -> void:
 	Steam.addRequestLobbyListDistanceFilter(3)  # Set distance to worldwide.
 
-	print("Requesting a lobby list...")
+	Logging.debug("Requesting a lobby list...")
 	Steam.requestLobbyList()
 
 
@@ -53,22 +52,22 @@ func _on_Global_recieved_lobby_list(lobbies: Array) -> void:
 	for lobby in lobbies:
 		var lobby_name: String = Steam.getLobbyData(lobby, "name")
 		var lobby_mode: String = Steam.getLobbyData(lobby, "mode")
+		var members: int = Steam.getNumLobbyMembers(lobby)
 		
-		if not lobby_name.empty():
+		if lobby_name and lobby_mode:
 			var button: Button = Button.new()
-			button.text = lobby_name + ": " + lobby_mode
+			button.text = '%s: %s (%d)' % [lobby_name, lobby_mode, members]
 			button.connect("pressed", Global, "_join_Lobby", [lobby])
 		
 			lobby_list.add_child(button)
 
 
 func _on_Start_pressed() -> void:
-	if Global.LOBBY_ID == 0: return  # Must be in a lobby to start a game.
+	if Global.lobby_id == 0: return  # Must be in a lobby to start a game.
+	if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID: return  # Must be host.
 	
 	var data: Dictionary = {
-		'started_game': null,
+		Global.MESSAGE_STARTED_GAME: null,
 	}
 	
 	Global.send_P2P_Packet(Global.RECIPIENT.ALL_MEMBERS, data)
-
-

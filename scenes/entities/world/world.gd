@@ -10,7 +10,9 @@ var online_players: Dictionary
 
 func _ready() -> void:
 	var packet_processor: Object = funcref(self, '_on_Global_game_state_changed')
-	Global.register_func_ref(packet_processor, 'game_state_changed')
+	Global.register_callback(packet_processor, 'game_state_changed')
+	Global.connect('player_list_changed', self, '_update_players')
+	_update_players(Global.lobby_members)
 
 
 func _on_Global_game_state_changed(packet: Dictionary) -> void:
@@ -21,7 +23,18 @@ func _on_Global_game_state_changed(packet: Dictionary) -> void:
 	)
 	
 	if not player in online_players:
-		print('Player %d joined.' % player)
+		Logging.debug('Player %d joined.' % player)
 		online_players[player] = OnlinePlayerScene.instance()
 	
 	online_players[player].global_translation = position
+
+
+func _update_players(players: Array) -> void:
+	for player in online_players:
+		if not player in players:
+			online_players[player].queue_free()
+			online_players.erase(player)
+	
+	for player in players:
+		if not player in online_players:
+			online_players[player] = OnlinePlayerScene.instance()

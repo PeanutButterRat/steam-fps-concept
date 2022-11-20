@@ -3,31 +3,45 @@ extends Node
 
 onready var file: File = File.new()
 onready var filepath: String = "res://log.txt"
+onready var error: int 
 
 
 func _ready() -> void:
-	var error: int
-	if file.file_exists(filepath):
-		error = file.open(filepath, File.READ_WRITE)
-	else:
-		error = file.open(filepath, File.WRITE)
+	error = file.open(filepath, File.WRITE)
+	if error != OK: error('Could not open log file.')
+	debug('Game launched.')
+
+
+# Formulates message as such: [SEVERITY] TIME: MESSAGE
+func generate_message(serverity: String, message: String) -> String:
+	return '[%s] %s: %s' % [serverity, Time.get_time_string_from_system(), message]
+
+
+func debug(string: String) -> void:
+	var message: String = generate_message(' debug ', string)
+	print(message)
+	write_to_log(message)
+
+
+func warn(string: String) -> void:
+	var message: String = generate_message('Warning', string)
+	push_warning(message)
+	write_to_log(message)
+
+
+func error(string: String) -> void:
+	var message: String = generate_message('ERROR', string)
+	push_error(message)
+	write_to_log(message)
+
+
+# Writes the given string to the log file.
+func write_to_log(string: String) -> void:
+	# Don't write logs for release versions.
+	if OS.has_feature('standalone') and not OS.has_feature('debug'): return
+	if error != OK: return  # Don't write to the log file if it didn't open properly.
 	
-	if error != OK:
-		print('[Error]: Could not open a logging file.')
-	else:
-		file.seek_end(-1)
-
-
-func debug(message: String) -> void:
-	file.store_string('[ debug ] %s: %s' % [Time.get_time_string_from_system(), message])
-
-
-func warn(message: String) -> void:
-	file.store_string('[Warning] %s: %s' % [Time.get_time_string_from_system(), message])
-
-
-func error(message: String) -> void:
-	file.store_string('[ ERROR ] %s: %s' % [Time.get_time_string_from_system(), message])
+	file.store_string(string + '\n')
 
 
 func _exit_tree():

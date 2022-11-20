@@ -6,8 +6,11 @@ signal lobby_created(lobby_id)
 signal recieved_lobby_list(lobbies)
 signal chat_event_occured(event)
 
-enum RECIPIENT {ALL_MEMBERS = -2, ALL_MINUS_HOST = -1}
+enum RECIPIENT {ALL_MEMBERS = 0, ALL_MINUS_HOST = 1}
 enum LOBBY_VISIBILITY {PRIVATE, FRIENDS, PUBLIC, INVISIBLE}
+
+# Packet message strings.
+const MESSAGE_STARTED_GAME = 'started_game'
 
 # Steam variables.
 var IS_OWNED: bool = false
@@ -15,16 +18,14 @@ var IS_ONLINE: bool = false
 var STEAM_ID: int = 0
 var STEAM_USERNAME: String = ''
 
-
 # Lobby variables.
 const PACKET_READ_LIMIT: int = 32
-var LOBBY_ID: int = 0
+var lobby_id: int = 0
 var lobby_members: Array = []
-var LOBBY_VOTE_KICK: bool = false
-var LOBBY_MAX_MEMBERS: int = 4
-
+var lobby_vote_kick: bool = false
+var lobby_max_members: int = 4
 var lobby_name: String = "Unnamed Lobby"
-var packet_function_table: Dictionary = {}
+var packet_callback_table: Dictionary = {}
 
 
 func _ready() -> void:
@@ -34,7 +35,6 @@ func _ready() -> void:
 	Steam.connect('lobby_match_list', self, '_on_Lobby_Match_List')
 	Steam.connect('lobby_joined', self, '_on_Lobby_Joined')
 	Steam.connect('lobby_chat_update', self, '_on_Lobby_Chat_Update')
-	Steam.connect('lobby_message', self, '_on_Lobby_Message')
 	Steam.connect('lobby_data_update', self, '_on_Lobby_Data_Update')
 	Steam.connect('lobby_invite', self, '_on_Lobby_Invite')
 	Steam.connect('join_requested', self, '_on_Lobby_Join_Requested')
@@ -45,17 +45,15 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	Steam.run_callbacks()
-	# If the player is connected, read packets.
-	if LOBBY_ID > 0:
-		_read_All_P2P_Packets()
+	if lobby_id > 0: _read_All_P2P_Packets()  # If the player is connected, read packets.
 
 
 func _initialize_Steam() -> void:
 	var INIT: Dictionary = Steam.steamInit()
-	print('Did Steam initialize?: ' + str(INIT))
+	Logging.debug('Did Steam initialize?: ' + str(INIT))
 
 	if INIT['status'] != 1:
-		print('Failed to initialize Steam. ' + str(INIT['verbal']) + ' Shutting down...')
+		Logging.error('Failed to initialize Steam. ' + str(INIT['verbal']) + ' Shutting down...')
 		get_tree().quit()
 	else:
 		IS_ONLINE = Steam.loggedOn()
@@ -64,12 +62,12 @@ func _initialize_Steam() -> void:
 		IS_OWNED = Steam.isSubscribed()
 		
 		if IS_OWNED == false:
-			print('User does not own this game.')
+			Logging.warn('User does not own this game.')
 			get_tree().quit()
 
 
 func _make_P2P_Handshake() -> void:
-	print('Sending P2P handshake to the lobby.')
+	Logging.debug('Sending P2P handshake to the lobby.')
 	send_P2P_Packet(RECIPIENT.ALL_MINUS_HOST, {'message': 'handshake'})
 
 
@@ -105,18 +103,19 @@ func _read_P2P_Packet() -> void:
 		var PACKET: Dictionary = Steam.readP2PPacket(PACKET_SIZE, 0)
 		
 		if PACKET.empty() or PACKET == null:
-			print('[Warning]: read an empty packet with non-zero size!')
+			Logging.warn('Read an empty packet with non-zero size.')
 		
-		var PACKET_SENDER: int = PACKET['steam_id_remote']  # Steam ID.
+		var SENDER: int = PACKET['steam_id_remote']  # Steam ID.
 		var READABLE_PACKET: Dictionary = bytes2var(PACKET['data'])
 		
-		print('Packet read from %d: %s' % [PACKET_SENDER, str(READABLE_PACKET)])
-		
+		Logging.debug('Packet read from %s: %s' % [
+			Steam.getFriendPersonaName(SENDER), str(READABLE_PACKET)
+		])
 
 		# Deal with packet data.
 		for key in READABLE_PACKET:
-			if key in packet_function_table:
-				var reference: Object = packet_function_table[key]
+			if key in packet_callback_table:
+				var reference: Object = packet_callback_table[key]
 				reference.call_func(READABLE_PACKET)
 
 
@@ -128,7 +127,7 @@ func _read_All_P2P_Packets(read_count: int = 0):
 
 
 func _on_P2P_Session_Request(remote_id: int) -> void:
-	var REQUESTER: String = Steam.getFriendPersonaName(remote_id)
+	var _REQUESTER: String = Steam.getFriendPersonaName(remote_id)
 
 	# Accept or deny the P2P session.
 	Steam.acceptP2PSessionWithUser(remote_id)
@@ -136,7 +135,7 @@ func _on_P2P_Session_Request(remote_id: int) -> void:
 
 
 func _on_P2P_Session_Connect_Fail(steamID: int, session_error: int) -> void:
-	var prefix: String = '[Warning]: Session failure with ' + str(steamID)
+	var prefix: String = 'Session failure with ' + str(steamID)
 	var postfix: String
 	
 	match session_error:
@@ -148,7 +147,7 @@ func _on_P2P_Session_Connect_Fail(steamID: int, session_error: int) -> void:
 		5:	postfix = ' [unused].'
 		_:	postfix = ' [unknown error ' + str(session_error) + '].'
 	
-	print(prefix + postfix)
+	Logging.warn(prefix + postfix)
 
 
 func _on_Lobby_Created(connect: int, lobby_id: int) -> void:
@@ -156,7 +155,7 @@ func _on_Lobby_Created(connect: int, lobby_id: int) -> void:
 	
 	if connect == 1:  # Creation was successful.
 		Steam.setLobbyJoinable(lobby_id, true)  # Just in case (should be default).
-		print('Allowing Steam to be relay backup: ' + str(Steam.allowP2PPacketRelay(true)))  # If needed.
+		Logging.debug('Allowing Steam to be relay backup: ' + str(Steam.allowP2PPacketRelay(true)))  # If needed.
 		
 		Steam.setLobbyData(lobby_id, 'name', lobby_name)
 		Steam.setLobbyData(lobby_id, 'mode', 'GodotSteam test')
@@ -185,8 +184,7 @@ func _on_Lobby_Match_List(lobbies: Array) -> void:
 
 
 func _on_Persona_Change(steam_id: int, _flag: int) -> void:
-	print('[STEAM] A user (' + str(steam_id) + ') had information change, updating the lobby list...')
-	
+	Logging.debug('%s had information change, updating lobby list.' % [Steam.getFriendPersonaName(steam_id)])
 	lobby_members = _get_lobby_members()
 	emit_signal('player_list_changed', lobby_members)
 
@@ -204,7 +202,7 @@ func _join_Lobby(lobby_id: int) -> void:
 func _on_Lobby_Joined(lobby_id: int, _permissions: int, _locked: bool, response: int) -> void:
 	if response == 1:  # Joining was successful.
 		lobby_name = Steam.getLobbyData(lobby_id, 'name')
-		LOBBY_ID = lobby_id
+		self.lobby_id = lobby_id
 		lobby_members = _get_lobby_members()
 		emit_signal('player_list_changed', lobby_members)
 		emit_signal('chat_event_occured', 'Joined ' + lobby_name + ' successfully.')
@@ -231,22 +229,22 @@ func _on_Lobby_Joined(lobby_id: int, _permissions: int, _locked: bool, response:
 		Steam.requestLobbyList() # Re-open the lobby list.
 
 
-func _on_Lobby_Data_Update(success: int, lobby_id: int, member_id: int):
-	print('Lobby (%d) data was updated, success: %d, member: %d' % [lobby_id, success, member_id])
+func _on_Lobby_Data_Update(success: int, _lobby_id: int, _member_id: int):
+	Logging.debug('Lobby data updated: ' + 'true' if success else 'false')
 
 
 func leave_Lobby() -> void:
-	if LOBBY_ID != 0:
-		Steam.leaveLobby(LOBBY_ID) # Send leave request to Steam
+	if lobby_id != 0:
+		Steam.leaveLobby(lobby_id) # Send leave request to Steam
 		
 		# Close session with all users
 		for member in lobby_members:
 			if member['steam_id'] != Global.STEAM_ID:
-				print("Closing session with user: " + member['steam_name'])
+				Logging.warn("Closing session with user: " + member['steam_name'])
 				Steam.closeP2PSessionWithUser(member['steam_id'])
 		
 		lobby_members.clear()
-		LOBBY_ID = 0
+		lobby_id = 0
 		
 		emit_signal('chat_event_occured', 'Left the lobby.')
 		emit_signal('player_list_changed', lobby_members)
@@ -255,8 +253,8 @@ func leave_Lobby() -> void:
 func _get_lobby_members() -> Array:
 	var members: Array = []
 	
-	for member in range(0, Steam.getNumLobbyMembers(LOBBY_ID)):
-		var MEMBER_STEAM_ID: int = Steam.getLobbyMemberByIndex(LOBBY_ID, member)
+	for member in range(0, Steam.getNumLobbyMembers(lobby_id)):
+		var MEMBER_STEAM_ID: int = Steam.getLobbyMemberByIndex(lobby_id, member)
 		var MEMBER_STEAM_NAME: String = Steam.getFriendPersonaName(MEMBER_STEAM_ID)
 		
 		members.append(
@@ -269,15 +267,21 @@ func _get_lobby_members() -> Array:
 	return members
 
 
-func register_func_ref(reference: Object, trigger: String) -> bool:
-	if trigger in packet_function_table: return false
+func register_callback(reference: Object, trigger: String) -> bool:
+	if trigger in packet_callback_table: return false
 	
-	packet_function_table[trigger] = reference
+	packet_callback_table[trigger] = reference
 	return true
 
 
-func deregister_func_ref(reference: Object) -> bool:
-	if not reference in packet_function_table:return false
+func deregister_callback(reference: Object) -> bool:
+	if not reference in packet_callback_table: return false
 	
-	packet_function_table.erase(reference)
+	packet_callback_table.erase(reference)
 	return true
+
+
+func _on_Lobby_Chat_Update(_lobby_id: int, changed_id: int, making_change_id: int, _chat_state: int):
+	lobby_members = _get_lobby_members()
+	emit_signal('player_list_changed', lobby_members)
+	Logging.debug('Lobby chat update: %d (changed_id), %d (making_change_id)' % [changed_id, making_change_id])
