@@ -10,7 +10,7 @@ var lobby: Control
 
 func _ready() -> void:
 	var packet_processor: Object = funcref(self, "_on_Global_started_game")
-	Global.register_callback(packet_processor, Global.MESSAGE_STARTED_GAME)
+	Global.register_callback(packet_processor, Global.EVENT.GAME_STARTED)
 	
 	_check_Command_Line()
 	

@@ -7,7 +7,6 @@ onready var _message: LineEdit = $'%Message'
 var chat_colors: Dictionary = {}
 
 
-
 func _ready() -> void:
 	Steam.connect('lobby_message', self, '_on_Steam_lobby_message')
 	Global.connect('chat_event_occured', self, '_on_Global_chat_event_occured')

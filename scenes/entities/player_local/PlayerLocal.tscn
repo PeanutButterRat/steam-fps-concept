@@ -21,3 +21,90 @@ mesh = SubResource( 2 )
 [node name="Camera" type="Camera" parent="."]
 unique_name_in_owner = true
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0 )
+
+[node name="DebugHUD" type="Panel" parent="."]
+anchor_right = 0.169
+anchor_bottom = 0.104
+margin_right = -0.480042
+margin_bottom = -0.32
+
+[node name="VerticalContainer" type="VBoxContainer" parent="DebugHUD"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="XContianer" type="HBoxContainer" parent="DebugHUD/VerticalContainer"]
+margin_right = 324.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Position" type="Label" parent="DebugHUD/VerticalContainer/XContianer"]
+margin_right = 160.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+text = "X Position:"
+align = 1
+valign = 1
+
+[node name="X" type="Label" parent="DebugHUD/VerticalContainer/XContianer"]
+unique_name_in_owner = true
+margin_left = 164.0
+margin_right = 324.0
+margin_bottom = 34.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+align = 1
+valign = 1
+
+[node name="YContainer" type="HBoxContainer" parent="DebugHUD/VerticalContainer"]
+margin_top = 38.0
+margin_right = 324.0
+margin_bottom = 73.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Position" type="Label" parent="DebugHUD/VerticalContainer/YContainer"]
+margin_right = 160.0
+margin_bottom = 35.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+text = "Y Position:"
+align = 1
+valign = 1
+
+[node name="Y" type="Label" parent="DebugHUD/VerticalContainer/YContainer"]
+unique_name_in_owner = true
+margin_left = 164.0
+margin_right = 324.0
+margin_bottom = 35.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+align = 1
+valign = 1
+
+[node name="ZContainer" type="HBoxContainer" parent="DebugHUD/VerticalContainer"]
+margin_top = 77.0
+margin_right = 324.0
+margin_bottom = 112.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Position" type="Label" parent="DebugHUD/VerticalContainer/ZContainer"]
+margin_right = 160.0
+margin_bottom = 35.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+text = "Z Position:"
+align = 1
+valign = 1
+
+[node name="Z" type="Label" parent="DebugHUD/VerticalContainer/ZContainer"]
+unique_name_in_owner = true
+margin_left = 164.0
+margin_right = 324.0
+margin_bottom = 35.0
+size_flags_horizontal = 3
+size_flags_vertical = 5
+align = 1
+valign = 1

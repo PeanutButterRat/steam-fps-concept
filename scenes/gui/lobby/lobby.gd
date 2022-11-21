@@ -35,12 +35,12 @@ func _on_Leave_pressed() -> void:
 
 
 func _on_Global_player_list_changed(players: Array) -> void:
-	for player in player_list.get_children():
-		player.queue_free()
+	for label in player_list.get_children():
+		label.queue_free()
 	
 	for player in players:
 		var label: Label = Label.new()
-		label.text = player['steam_name']
+		label.text = Steam.getFriendPersonaName(player)
 		
 		player_list.add_child(label)
 
@@ -67,7 +67,7 @@ func _on_Start_pressed() -> void:
 	if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID: return  # Must be host.
 	
 	var data: Dictionary = {
-		Global.MESSAGE_STARTED_GAME: null,
+		Global.EVENT_OCCURRED: Global.EVENT.GAME_STARTED,
 	}
 	
 	Global.send_P2P_Packet(Global.RECIPIENT.ALL_MEMBERS, data)

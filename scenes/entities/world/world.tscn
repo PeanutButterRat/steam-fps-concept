@@ -19,7 +19,7 @@ LocalPlayerScene = ExtResource( 2 )
 OnlinePlayerScene = ExtResource( 4 )
 
 [node name="StaticBody" type="StaticBody" parent="."]
-transform = Transform( 200, 0, 0, 0, 1, 0, 0, 0, 200, 0, 0, 0 )
+transform = Transform( 100, 0, 0, 0, 1, 0, 0, 0, 100, 0, 0, 0 )
 
 [node name="CollisionShape" type="CollisionShape" parent="StaticBody"]
 shape = SubResource( 1 )
@@ -30,3 +30,7 @@ material = SubResource( 3 )
 
 [node name="Player" parent="." instance=ExtResource( 2 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.69174, 0 )
+
+[node name="Spawn" type="Spatial" parent="."]
+unique_name_in_owner = true
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.13246, -4.73626 )

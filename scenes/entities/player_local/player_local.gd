@@ -2,6 +2,9 @@ extends KinematicBody
 
 
 onready var camera: Camera = $'%Camera'
+onready var x_label: Label = $'%X'
+onready var y_label: Label = $'%Y'
+onready var z_label: Label = $'%Z'
 
 const ACCELERATION_DEFAULT: = 10
 const ACCELERATION_AIR_ACTIVE: = 5
@@ -78,8 +81,12 @@ func _physics_process(delta: float) -> void:
 	velocity = move_and_slide_with_snap(velocity, snap, Vector3.UP, true, 5, 1, true)
 	
 	var message: Dictionary = {
-		'game_state_changed': self.global_translation
+		'game_state_changed': translation
 	}
+	
+	x_label.text = str(stepify(translation.x, 0.01))
+	y_label.text = str(stepify(translation.y, 0.01))
+	z_label.text = str(stepify(translation.z, 0.01))
 	
 	Global.send_P2P_Packet(Global.RECIPIENT.ALL_MINUS_HOST, message)
 
@@ -89,4 +96,3 @@ func _unhandled_input(event: InputEvent) -> void:
 		self.rotate_y(deg2rad(-event.relative.x * mouse_sensitivity))  # Horizontal rotation.
 		camera.rotate_x(deg2rad(-event.relative.y * mouse_sensitivity))  # Vertical rotation.
 		camera.rotation.x = clamp(camera.rotation.x, deg2rad(-89), deg2rad(89))
-
