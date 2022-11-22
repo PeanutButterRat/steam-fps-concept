@@ -10,15 +10,15 @@ var online_players: Dictionary
 
 
 func _ready() -> void:
-	var packet_processor: Object = funcref(self, '_on_Event_player_moved')
-	Global.register_callback(packet_processor, Global.EVENT.PLAYER_MOVED)
-	
+	Global.connect('event_occurred', self, '_on_Event_player_moved')
 	Global.connect('player_list_changed', self, '_update_players')
 	_update_players(Global.lobby_members)
 
 
 
-func _on_Event_player_moved(packet: Dictionary) -> void:
+func _on_Event_player_moved(event: int, packet: Dictionary) -> void:
+	if event != Global.EVENT.PLAYER_MOVED: return
+	
 	var player: int = packet.get('from')
 	var message: String = packet.get('position', '(0,0,0)').trim_prefix('(').trim_suffix(')')
 	var floats: PoolRealArray = message.split_floats(',')

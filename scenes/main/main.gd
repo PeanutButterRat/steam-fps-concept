@@ -9,8 +9,7 @@ var lobby: Control
 
 
 func _ready() -> void:
-	var packet_processor: Object = funcref(self, "_on_Global_started_game")
-	Global.register_callback(packet_processor, Global.EVENT.GAME_STARTED)
+	Global.connect('event_occurred', self, '_on_Event_game_started')
 	
 	_check_Command_Line()
 	
@@ -30,7 +29,9 @@ func _check_Command_Line() -> void:
 			Global._join_Lobby(int(ARGUMENTS[1]))
 
 
-func _on_Global_started_game(_packet: Dictionary):
+func _on_Event_game_started(event: int, _packet: Dictionary):
+	if event != Global.EVENT.GAME_STARTED: return
+	
 	world = WorldScene.instance()
 	add_child(world)
 	lobby.queue_free()

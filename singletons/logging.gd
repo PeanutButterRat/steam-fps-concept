@@ -25,13 +25,13 @@ func debug(string: String) -> void:
 
 func warn(string: String) -> void:
 	var message: String = generate_message('Warning', string)
-	push_warning(message)
+	push_warning(string)
 	write_to_log(message)
 
 
 func error(string: String) -> void:
 	var message: String = generate_message('ERROR', string)
-	push_error(message)
+	push_error(string)
 	write_to_log(message)
 
 

@@ -1,6 +1,7 @@
 extends Node
 
 
+signal event_occurred(event, packet)
 signal player_list_changed(players)
 signal lobby_created(lobby_id)
 signal recieved_lobby_list(lobbies)
@@ -26,9 +27,6 @@ var lobby_members: Array = []
 var lobby_vote_kick: bool = false
 var lobby_max_members: int = 4
 var lobby_name: String = "Unnamed Lobby"
-var packet_callback_table: Dictionary = {}
-var default_callback: Object = funcref(self, '_default_callback')
-var last_callback_id: int = -1
 
 
 func _ready() -> void:
@@ -118,9 +116,7 @@ func _read_P2P_Packet() -> void:
 		# Deal with packet data.
 		if EVENT_OCCURRED in READABLE_PACKET:
 			var event: int = READABLE_PACKET[EVENT_OCCURRED]
-			var reference: Object = packet_callback_table.get(event, default_callback)
-			last_callback_id = event
-			reference.call_func(READABLE_PACKET)
+			emit_signal('event_occurred', event, READABLE_PACKET)
 
 
 func _read_All_P2P_Packets(read_count: int = 0):
@@ -263,25 +259,7 @@ func _get_lobby_members() -> Array:
 	return members
 
 
-func register_callback(reference: Object, trigger: int) -> bool:
-	if trigger in packet_callback_table: return false
-	
-	packet_callback_table[trigger] = reference
-	return true
-
-
-func deregister_callback(reference: Object) -> bool:
-	if not reference in packet_callback_table: return false
-	
-	packet_callback_table.erase(reference)
-	return true
-
-
 func _on_Lobby_Chat_Update(_lobby_id: int, changed_id: int, making_change_id: int, _chat_state: int):
 	lobby_members = _get_lobby_members()
 	emit_signal('player_list_changed', lobby_members)
 	Logging.debug('Lobby chat update: %d (changed_id), %d (making_change_id)' % [changed_id, making_change_id])
-
-
-func _default_callback(_packet: Dictionary) -> void:
-	Logging.warn('Unknown callback was triggered in Global.gd. ID: %d' % last_callback_id)

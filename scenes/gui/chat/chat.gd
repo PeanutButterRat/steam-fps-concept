@@ -29,7 +29,7 @@ func _on_Message_text_entered(new_text: String) -> void:
 	_message.set_text("")
 	if new_text.strip_edges().empty(): return  # Take no action if message is whitespace.
 	
-	Steam.sendLobbyChatMsg(Global.LOBBY_ID, new_text)
+	Steam.sendLobbyChatMsg(Global.lobby_id, new_text)
 
 
 func record(message: String, color: Color) -> void:
