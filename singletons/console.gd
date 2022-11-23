@@ -37,6 +37,9 @@ const TYPES: Dictionary = {
 	TYPE_MAX: 'Size',
 }
 
+const COMMAND_SUCCESS: String = 'Command was successfully executed.'
+const COMMAND_TYPE_ERROR: String = 'Improper type for one of the arguments.'
+const COMMAND_COUNT_ERROR: String = 'Improper number of supplied arguments.'
 
 onready var commands: Dictionary = {}
 onready var default: FuncRef = funcref(self, '_default')
@@ -53,31 +56,19 @@ func execute(command: String, arguments: Array) -> String:
 func register(command: String, reference: FuncRef) -> void:
 	if command in commands:
 		Logging.warn(
-			"Overwriting '%s' with '%s' for command '%s'." %
+			"Overwriting '%s' with '%s' for command '%s'. (Console.gd)" %
 			[commands[command].function, reference.function, command]
 		)
 	
 	commands[command] = reference
 
 
-func deregister(command: String, reference: FuncRef) -> void:
+func deregister(command: String) -> void:
 	if not command in commands:
-		Logging.warn("Attempted to deregister nonexistent command '%s'." % command)
+		Logging.warn("Attempted to deregister nonexistent command '%s'. (Console.gd)" % command)
 		return
 	
 	commands.erase(command)
-
-
-func type_error(argument: String) -> String:
-	return "Bad argument type for '%s'." % argument
-
-
-func count_error(expected: int, recieved: int) -> String:
-	return 'Wrong argument count. Expected: %d, got: %d.' % [expected, recieved]
-
-
-func success() -> String:
-	return 'Command successfully executed.'
 
 
 func _default(_args: Array) -> String:

@@ -1,18 +1,32 @@
 extends Node
 
 
-signal event_occurred(event, packet)
+
 signal player_list_changed(players)
 signal lobby_created(lobby_id)
 signal recieved_lobby_list(lobbies)
 signal chat_event_occured(event)
 
-enum RECIPIENT {ALL_MEMBERS = 0, ALL_MINUS_HOST = 1}
-enum LOBBY_VISIBILITY {PRIVATE, FRIENDS, PUBLIC, INVISIBLE}
 
-const EVENT_OCCURRED: String = 'event_occured'
-enum EVENT {GAME_STARTED, PLAYER_MOVED}
+enum Recipient {
+	ALL_MEMBERS = -2, 
+	ALL_MINUS_HOST = -1
+	HOST = 0
+}
 
+enum LobbyVisibility {
+	PRIVATE, 
+	FRIENDS, 
+	PUBLIC, 
+	INVISIBLE
+}
+
+enum Event {
+	GAME_STARTED,
+	PLAYER_MOVED
+}
+
+const EVENT_OCCURRED: String = 'event'
 
 # Steam variables.
 var IS_OWNED: bool = false
@@ -27,6 +41,9 @@ var lobby_members: Array = []
 var lobby_vote_kick: bool = false
 var lobby_max_members: int = 4
 var lobby_name: String = "Unnamed Lobby"
+
+
+onready var processors: Dictionary = {}
 
 
 func _ready() -> void:
@@ -69,7 +86,7 @@ func _initialize_Steam() -> void:
 
 func _make_P2P_Handshake() -> void:
 	Logging.debug('Sending P2P handshake to the lobby.')
-	send_P2P_Packet(RECIPIENT.ALL_MINUS_HOST, {'message': 'handshake'})
+	send_P2P_Packet(Recipient.ALL_MINUS_HOST, {'message': 'handshake'})
 
 
 func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
@@ -83,17 +100,17 @@ func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
 	DATA.append_array(var2bytes(packet_data))
 
 	# Send the packet to everyone excluding the host.
-	if target == RECIPIENT.ALL_MINUS_HOST:
+	if target == Recipient.ALL_MINUS_HOST:
 		for member in lobby_members:
 			if member != Global.STEAM_ID:  # Don't send the packet to yourself.
 				Steam.sendP2PPacket(member, DATA, SEND_TYPE, CHANNEL)
 	
 	# Send the packet to everyone including the host.
-	elif target == RECIPIENT.ALL_MEMBERS:
+	elif target == Recipient.ALL_MEMBERS:
 		for member in lobby_members:
 			Steam.sendP2PPacket(member, DATA, SEND_TYPE, CHANNEL)
 	
-	# Send to specific recipient.
+	# Send to specific Recipient.
 	else: Steam.sendP2PPacket(target, DATA, SEND_TYPE, CHANNEL)
 
 
@@ -115,8 +132,9 @@ func _read_P2P_Packet() -> void:
 		
 		# Deal with packet data.
 		if EVENT_OCCURRED in READABLE_PACKET:
-			var event: int = READABLE_PACKET[EVENT_OCCURRED]
-			emit_signal('event_occurred', event, READABLE_PACKET)
+			var key: int = READABLE_PACKET[EVENT_OCCURRED]
+			if key in processors:
+				processors[key].call_func(READABLE_PACKET)
 
 
 func _read_All_P2P_Packets(read_count: int = 0):
@@ -263,3 +281,21 @@ func _on_Lobby_Chat_Update(_lobby_id: int, changed_id: int, making_change_id: in
 	lobby_members = _get_lobby_members()
 	emit_signal('player_list_changed', lobby_members)
 	Logging.debug('Lobby chat update: %d (changed_id), %d (making_change_id)' % [changed_id, making_change_id])
+
+
+func register(key: int, reference: FuncRef) -> void:
+	if key in processors:
+		Logging.warn(
+			"Overwriting '%s' with '%s' in packet processors. (Global.gd)" %
+			[processors[key].function, reference.function]
+		)
+	
+	processors[key] = reference
+
+
+func deregister(key: int) -> void:
+	if not key in processors:
+		Logging.warn("Attempted to deregister nonexistent reference from processors. (Global.gd)")
+		return
+	
+	processors.erase(key)

@@ -20,7 +20,7 @@ func _on_Create_pressed() -> void:
 		if lobby_name.empty(): lobby_name = Global.STEAM_USERNAME + "'s Lobby"
 		Global.lobby_name = lobby_name
 		
-		Steam.createLobby(Global.LOBBY_VISIBILITY.PUBLIC, Global.lobby_max_members)
+		Steam.createLobby(Global.LobbyVisibility.PUBLIC, Global.lobby_max_members)
 
 
 func _on_Find_pressed() -> void:
@@ -67,7 +67,7 @@ func _on_Start_pressed() -> void:
 	if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID: return  # Must be host.
 	
 	var data: Dictionary = {
-		Global.EVENT_OCCURRED: Global.EVENT.GAME_STARTED,
+		Global.EVENT_OCCURRED: Global.Event.GAME_STARTED
 	}
 	
-	Global.send_P2P_Packet(Global.RECIPIENT.ALL_MEMBERS, data)
+	Global.send_P2P_Packet(Global.Recipient.ALL_MEMBERS, data)

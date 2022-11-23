@@ -88,7 +88,7 @@ func _physics_process(delta: float) -> void:
 	y_label.text = str(stepify(translation.y, 0.01))
 	z_label.text = str(stepify(translation.z, 0.01))
 	
-	Global.send_P2P_Packet(Global.RECIPIENT.ALL_MINUS_HOST, message)
+	Global.send_P2P_Packet(Global.Recipient.ALL_MINUS_HOST, message)
 
 
 func _unhandled_input(event: InputEvent) -> void:

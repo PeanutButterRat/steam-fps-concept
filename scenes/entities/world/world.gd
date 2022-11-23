@@ -8,9 +8,11 @@ onready var spawn: Spatial = $'%Spawn'
 var local_player: KinematicBody
 var online_players: Dictionary
 
+onready var processor: FuncRef = funcref(self, '_on_Event_player_moved')
+onready var key: int = Global.Event.PLAYER_MOVED
 
 func _ready() -> void:
-	Global.connect('event_occurred', self, '_on_Event_player_moved')
+	Global.register(key, processor)
 	Global.connect('player_list_changed', self, '_update_players')
 	_update_players(Global.lobby_members)
 
@@ -41,3 +43,7 @@ func _update_players(players: Array) -> void:
 			online_players[player] = instance
 			instance.translation = spawn.translation
 			add_child(instance)
+
+
+func _exit_tree() -> void:
+	Global.deregister(key)
