@@ -1,17 +1,17 @@
 extends Control
 
 
+const COLOR_ERROR: Color = Color.indianred
+
 onready var line: LineEdit = $'%LineEdit'
 onready var animations: AnimationPlayer = $'%AnimationPlayer'
 onready var feedback: Label = $'%Feedback'
 onready var timer: Timer = $'%FeedbackTimer'
 onready var feedback_panel: Panel = $'%FeedbackPanel'
 
-const COLOR_ERROR: Color = Color.indianred
-const COLOR_SUCCESS: Color = Color.white
-
 
 func _ready() -> void:
+	feedback.set("custom_colors/font_color", COLOR_ERROR)
 	hide()
 
 
@@ -22,7 +22,6 @@ func _input(event: InputEvent) -> void:
 		get_tree().set_input_as_handled()
 	elif event.is_action_pressed('ui_cancel') and visible:  # User is in console and wants to leave.
 		close()
-		get_tree().set_input_as_handled()
 
 
 func _on_LineEdit_text_changed(new_text: String) -> void:
@@ -48,14 +47,10 @@ func _on_LineEdit_text_entered(new_text: String) -> void:
 	# Set up the feedback message.
 	feedback.text = message
 	
-	var color: Color = COLOR_SUCCESS
-	if message != Console.COMMAND_SUCCESS:
-		color = COLOR_ERROR
-	
-	feedback.set("custom_colors/font_color", color)
-	
+	if message == Console.COMMAND_SUCCESS:
+		close()
 	# Reset the feedback timer if the message icon is already displayed.
-	if not timer.is_stopped():
+	elif not timer.is_stopped():
 		timer.start()
 	else:
 		animations.play('feedback_show')
@@ -64,11 +59,13 @@ func _on_LineEdit_text_entered(new_text: String) -> void:
 
 
 func close() -> void:
+	Console.focus(false)
 	line.release_focus()  # Prevents user from entering in a command while closing prompt.
 	animations.play('hide')
 
 
 func open() -> void:
+	Console.focus(true)
 	show()
 	animations.play('show')
 

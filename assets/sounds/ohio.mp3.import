@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/ohio.mp3-af0f773a77a603b2182b8aae797007f7.mp3str"
+
+[deps]
+
+source_file="res://assets/sounds/ohio.mp3"
+dest_files=[ "res://.import/ohio.mp3-af0f773a77a603b2182b8aae797007f7.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0

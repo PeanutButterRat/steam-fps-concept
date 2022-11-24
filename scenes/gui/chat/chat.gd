@@ -51,5 +51,5 @@ func _on_Steam_lobby_message(_lobby_id: int, user_id: int, message: String, _cha
 
 
 func _on_Global_chat_event_occured(message: String) -> void:
-	record(message, Color.black)
+	record(message, Color.whitesmoke)
 

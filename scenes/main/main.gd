@@ -8,12 +8,8 @@ var world: Spatial
 var lobby: Control
 
 
-onready var processor: FuncRef = funcref(self, '_on_Event_game_started')
-onready var key: int = Global.Event.GAME_STARTED
-
-
 func _ready() -> void:
-	Global.register(key, processor)
+	Global.connect('game_started', self, '_on_Event_game_started')
 	
 	_check_Command_Line()
 	
@@ -38,6 +34,3 @@ func _on_Event_game_started(_packet: Dictionary):
 	add_child(world)
 	lobby.queue_free()
 
-
-func _exit_tree() -> void:
-	Global.deregister(key)

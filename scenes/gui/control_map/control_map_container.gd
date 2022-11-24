@@ -1,10 +1,10 @@
 extends HBoxContainer
 
-const filepath: String = "res://settings.ini"
+
 export(String) onready var _action: String
 
-onready var control_map_buttons: Array = Global.get("control_map_buttons")
-onready var settings: ConfigFile
+onready var control_map_buttons: Array = Keybinds.get('control_map_buttons')
+onready var settings: ConfigFile = Keybinds.get('settings')
 
 onready var _buttons: Array = []
 onready var _bindings: Array
@@ -13,22 +13,21 @@ var _waiting_input: bool = false  # Tracks if the user is setting a new key bind
 
 
 func _ready() -> void:
-	settings = ConfigFile.new()
-	var _error = settings.load(filepath)
-	if _error != OK: push_error("'%s' did not load properly: RETURNED %d" % [filepath, _error])
-		
 	if _action.empty():  # Attempt to infer action from label if present and format it.
 		for child in self.get_children():
 			if child is Label:
 				_action = child.get_text().to_lower().split(' ').join('_')  # Ex: move_forward.
-				print(_action)
 				break
+		
+		if not _action:  # Attempt to infer action from node name instead.
+			_action = name.to_lower().split(' ').join('_')  # Ex: move_forward.
 	
 	if control_map_buttons == null:
-		push_warning("'control_map_buttons' is not defined in global.gd, no protection against keybind collisions.")
+		Logging.warn("'control_map_buttons' is not defined in global.gd, no protection against keybind collisions.")
 		control_map_buttons = []
 	_bindings = settings.get_value("controls", _action, [])
-	if _bindings == null: push_warning("Couldn't find control bindings for '%s'." % _action)
+	if _bindings == null: 
+		Logging.warn("Couldn't find control bindings for '%s'." % _action)
 	
 	# Clear out the input map for each action and build it back up from the init file.
 	if not InputMap.get_actions().has(_action): InputMap.add_action(_action)
@@ -45,7 +44,7 @@ func _ready() -> void:
 		if event: InputMap.action_add_event(_action, event)  # Add the saved binding to the InputMap.
 		
 		# Initialize the button.
-		_error = button.connect("remapped_control", self, "_on_Button_remapped_control")
+		button.connect("remapped_control", self, "_on_Button_remapped_control")
 		button.set_event(event)
 		button.update_text()
 
@@ -70,18 +69,7 @@ func _on_Button_remapped_control(button: Button, event: InputEvent) -> void:
 	
 
 func check_for_collisions(button):
-	print(control_map_buttons)
 	for element in control_map_buttons:
 		if element.get_instance_id() == button.get_instance_id(): continue
 		if element.get_text() == button.get_text():
 			element.emit_signal("remapped_control", element, null)  # Unbind the previously bound control.
-
-
-func _exit_tree() -> void:
-	print("Attempting to save keybinds for '%s' in '%s'..." % [_action, filepath])
-	var error = settings.save(filepath)
-	
-	if error != OK:
-		print("'%s' was unable to save correctly: RETURNED %d" % [_action, error])
-	else:
-		print("Save successful.")

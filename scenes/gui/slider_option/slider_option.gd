@@ -45,8 +45,9 @@ func _on_Slider_value_changed(value: float) -> void:
 
 
 func _on_Box_value_changed(value: float) -> void:
-	if _slider.get_value() != value: _slider.set_value(value)
-	
+	if _slider.get_value() != value:
+		_slider.set_value(value)
+
 
 func get_value() -> float:
 	return _slider.get_value()

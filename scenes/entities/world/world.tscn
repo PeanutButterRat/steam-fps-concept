@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://addons/kenney_prototype_textures/orange/texture_02.png" type="Texture" id=1]
 [ext_resource path="res://scenes/entities/player_local/PlayerLocal.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/entities/world/world.gd" type="Script" id=3]
 [ext_resource path="res://scenes/entities/player_online/PlayerOnline.tscn" type="PackedScene" id=4]
+[ext_resource path="res://scenes/entities/timmy/timmy.tscn" type="PackedScene" id=5]
 
 [sub_resource type="BoxShape" id=1]
 
@@ -15,8 +16,8 @@ uv1_scale = Vector3( 18, 12, 1 )
 
 [node name="World" type="Spatial"]
 script = ExtResource( 3 )
-LocalPlayerScene = ExtResource( 2 )
 OnlinePlayerScene = ExtResource( 4 )
+TimmyScene = ExtResource( 5 )
 
 [node name="StaticBody" type="StaticBody" parent="."]
 transform = Transform( 100, 0, 0, 0, 1, 0, 0, 0, 100, 0, 0, 0 )
@@ -29,6 +30,7 @@ mesh = SubResource( 2 )
 material = SubResource( 3 )
 
 [node name="Player" parent="." instance=ExtResource( 2 )]
+unique_name_in_owner = true
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.69174, 0 )
 
 [node name="Spawn" type="Spatial" parent="."]

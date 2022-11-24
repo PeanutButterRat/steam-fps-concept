@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://assets/sounds/ohio.mp3" type="AudioStream" id=1]
+[ext_resource path="res://scenes/entities/player_online/PlayerOnline.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scenes/entities/timmy/timmy.gd" type="Script" id=3]
+
+[node name="Timmy" instance=ExtResource( 2 )]
+script = ExtResource( 3 )
+
+[node name="AudioSteam" type="AudioStreamPlayer3D" parent="." index="2"]
+unique_name_in_owner = true
+stream = ExtResource( 1 )
+autoplay = true

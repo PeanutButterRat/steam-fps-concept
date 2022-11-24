@@ -3,7 +3,7 @@
 [ext_resource path="res://scenes/main/main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/gui/lobby/lobby.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/entities/world/world.tscn" type="PackedScene" id=3]
-[ext_resource path="res://scenes/console/terminal.tscn" type="PackedScene" id=4]
+[ext_resource path="res://scenes/terminal/terminal.tscn" type="PackedScene" id=4]
 
 [node name="Main" type="Node"]
 script = ExtResource( 1 )

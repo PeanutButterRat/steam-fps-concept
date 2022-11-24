@@ -8,6 +8,17 @@ signal recieved_lobby_list(lobbies)
 signal chat_event_occured(event)
 
 
+signal game_started(packet)
+signal player_moved(packet)
+signal timmy_spawned(packet)
+
+
+const EVENTS = {
+	GAME_STARTED = 'game_started',
+	PLAYER_MOVED = 'player_moved',
+	TIMMY_SPAWNED = 'timmy_spawned'
+}
+
 enum Recipient {
 	ALL_MEMBERS = -2, 
 	ALL_MINUS_HOST = -1
@@ -21,12 +32,8 @@ enum LobbyVisibility {
 	INVISIBLE
 }
 
-enum Event {
-	GAME_STARTED,
-	PLAYER_MOVED
-}
-
 const EVENT_OCCURRED: String = 'event'
+const EVENT_DATA: String = 'data'
 
 # Steam variables.
 var IS_OWNED: bool = false
@@ -42,8 +49,6 @@ var lobby_vote_kick: bool = false
 var lobby_max_members: int = 4
 var lobby_name: String = "Unnamed Lobby"
 
-
-onready var processors: Dictionary = {}
 
 
 func _ready() -> void:
@@ -131,10 +136,8 @@ func _read_P2P_Packet() -> void:
 		])
 		
 		# Deal with packet data.
-		if EVENT_OCCURRED in READABLE_PACKET:
-			var key: int = READABLE_PACKET[EVENT_OCCURRED]
-			if key in processors:
-				processors[key].call_func(READABLE_PACKET)
+		var event: String = READABLE_PACKET.get(EVENT_OCCURRED, null)
+		if event: emit_signal(event, READABLE_PACKET)
 
 
 func _read_All_P2P_Packets(read_count: int = 0):
@@ -281,21 +284,3 @@ func _on_Lobby_Chat_Update(_lobby_id: int, changed_id: int, making_change_id: in
 	lobby_members = _get_lobby_members()
 	emit_signal('player_list_changed', lobby_members)
 	Logging.debug('Lobby chat update: %d (changed_id), %d (making_change_id)' % [changed_id, making_change_id])
-
-
-func register(key: int, reference: FuncRef) -> void:
-	if key in processors:
-		Logging.warn(
-			"Overwriting '%s' with '%s' in packet processors. (Global.gd)" %
-			[processors[key].function, reference.function]
-		)
-	
-	processors[key] = reference
-
-
-func deregister(key: int) -> void:
-	if not key in processors:
-		Logging.warn("Attempted to deregister nonexistent reference from processors. (Global.gd)")
-		return
-	
-	processors.erase(key)

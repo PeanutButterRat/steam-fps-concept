@@ -44,6 +44,7 @@ func _process(_delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	var horiziontal_rotation = global_transform.basis.get_euler().y  # Direction the player is looking in.
+	
 	input = Vector3(
 			Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 			0,  # No vertical motion calculated here.
@@ -67,6 +68,14 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity_force * delta
 		acceleration = ACCELERATION_AIR_ACTIVE if input else ACCELERATION_AIR_IDLE
 	
+	if Console.is_focused():
+		input = Vector3.ZERO
+		
+		if is_on_floor():
+			velocity.y = 0
+			snap = -get_floor_normal() * 5
+			acceleration = ACCELERATION_DEFAULT
+	
 	var movement: Vector3 = input * movement_speed  # Horizontal velocity vector.
 	movement.y = velocity.y  # Match the y velocity components so that when the velocity is interpolated, gravity is unaffected.
 	
@@ -81,7 +90,7 @@ func _physics_process(delta: float) -> void:
 	velocity = move_and_slide_with_snap(velocity, snap, Vector3.UP, true, 5, 1, true)
 	
 	var message: Dictionary = {
-		'game_state_changed': translation
+		Global.EVENT_OCCURRED: 'player_moved'
 	}
 	
 	x_label.text = str(stepify(translation.x, 0.01))

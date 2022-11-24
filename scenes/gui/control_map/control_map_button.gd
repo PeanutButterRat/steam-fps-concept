@@ -21,9 +21,7 @@ const MOUSE_BUTTON_STRINGS = {
 }
 
 export(Type) onready var _type
-
 onready var _event: InputEvent setget set_event, get_event
-
 var _waiting_input: bool = false  # Tracks if the user is setting a new key bind.
 
 
@@ -38,7 +36,7 @@ func _input(event: InputEvent) -> void:
 		update_text()
 	
 	# Delete the binding.
-	elif event.is_action_pressed("ui_delete"):
+	elif event.is_action_pressed("delete"):
 		input_registered = true
 		self.emit_signal("remapped_control", self, null)
 	
