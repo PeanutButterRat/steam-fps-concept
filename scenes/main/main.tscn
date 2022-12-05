@@ -3,13 +3,14 @@
 [ext_resource path="res://scenes/main/main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/gui/lobby/lobby.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/entities/world/world.tscn" type="PackedScene" id=3]
-[ext_resource path="res://scenes/terminal/terminal.tscn" type="PackedScene" id=4]
+[ext_resource path="res://scenes/gui/menu_options/menu_options.tscn" type="PackedScene" id=5]
 
 [node name="Main" type="Node"]
 script = ExtResource( 1 )
 LobbyScene = ExtResource( 2 )
 WorldScene = ExtResource( 3 )
 
-[node name="ConsoleLayer" type="CanvasLayer" parent="."]
+[node name="MenuLayer" type="CanvasLayer" parent="."]
+layer = 0
 
-[node name="Console" parent="ConsoleLayer" instance=ExtResource( 4 )]
+[node name="PopupPanel" parent="MenuLayer" instance=ExtResource( 5 )]

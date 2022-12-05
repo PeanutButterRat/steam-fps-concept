@@ -1,12 +1,13 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://scenes/entities/player_online/player_online.gd" type="Script" id=1]
+[ext_resource path="res://rifle.tscn" type="PackedScene" id=2]
 
 [sub_resource type="CapsuleShape" id=6]
 
 [sub_resource type="CapsuleMesh" id=2]
 
-[node name="Player" type="KinematicBody"]
+[node name="Player" type="KinematicBody" groups=["online_players"]]
 collision_layer = 0
 script = ExtResource( 1 )
 
@@ -24,3 +25,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.73929, 0 )
 pixel_size = 0.02
 billboard = 1
 text = "Player"
+
+[node name="scene" parent="." instance=ExtResource( 2 )]
+transform = Transform( 0.463004, 0, 0, 0, 0.447227, -0.119834, 0, 0.119834, 0.447227, 0, 0.187036, 0.81264 )

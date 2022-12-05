@@ -7,8 +7,13 @@ onready var file_error: int
 
 
 func _ready() -> void:
-	file_error = file.open(filepath, File.WRITE)
-	if file_error != OK: error('Could not open log file.')
+	# Disable logging for release versions.
+	if OS.has_feature('standalone') and not OS.has_feature('debug'):
+		file = null
+	else:
+		file_error = file.open(filepath, File.WRITE)
+		if file_error != OK: error('Could not open log file.')
+	
 	debug('Game launched.')
 
 
@@ -37,10 +42,7 @@ func error(string: String) -> void:
 
 # Writes the given string to the log file.
 func write_to_log(string: String) -> void:
-	# Don't write logs for release versions.
-	if OS.has_feature('standalone') and not OS.has_feature('debug'): return
-	if file_error != OK: return  # Don't write to the log file if it didn't open properly.
-	
+	if file == null or file_error != OK: return
 	file.store_string(string + '\n')
 
 

@@ -8,8 +8,9 @@ var world: Spatial
 var lobby: Control
 
 
+
 func _ready() -> void:
-	Global.connect('game_started', self, '_on_Event_game_started')
+	Global.connect('event_occurred', self, '_on_Global_event_occurred')
 	
 	_check_Command_Line()
 	
@@ -29,8 +30,8 @@ func _check_Command_Line() -> void:
 			Global._join_Lobby(int(ARGUMENTS[1]))
 
 
-func _on_Event_game_started(_packet: Dictionary):
-	world = WorldScene.instance()
-	add_child(world)
-	lobby.queue_free()
-
+func _on_Global_event_occurred(event: int, _packet: Dictionary):
+	if event == Global.Events.GAME_STARTED:
+		world = WorldScene.instance()
+		add_child(world)
+		lobby.queue_free()

@@ -66,9 +66,4 @@ func _on_Start_pressed() -> void:
 	if Global.lobby_id == 0: return  # Must be in a lobby to start a game.
 	if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID: return  # Must be host.
 	
-	var data: Dictionary = {
-		Global.EVENT_OCCURRED: Global.EVENTS.GAME_STARTED,
-		Global.EVENT_DATA: []
-	}
-	
-	Global.send_P2P_Packet(Global.Recipient.ALL_MEMBERS, data)
+	Global.emit_event(Global.Events.GAME_STARTED, [], Global.Recipient.ALL_MEMBERS)

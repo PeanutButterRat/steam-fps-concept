@@ -31,11 +31,11 @@ func _on_LineEdit_text_changed(new_text: String) -> void:
 
 func _on_LineEdit_text_entered(new_text: String) -> void:
 	if new_text.empty():  # Empty commands are thrown out.
-		hide()
+		close()
 		return
 	
 	# Parse command.
-	var strings: Array = new_text.split(' ')
+	var strings: Array = new_text.split(' ', false)
 	var command: String = strings[0]
 	var arguments: Array = strings.slice(1, -1)
 	Logging.debug('Command entered: [%s], arguments: %s.' % [command, arguments])

@@ -6,22 +6,22 @@ signal player_list_changed(players)
 signal lobby_created(lobby_id)
 signal recieved_lobby_list(lobbies)
 signal chat_event_occured(event)
+signal event_occurred(event, packet)
 
 
-signal game_started(packet)
-signal player_moved(packet)
-signal timmy_spawned(packet)
-
-
-const EVENTS = {
-	GAME_STARTED = 'game_started',
-	PLAYER_MOVED = 'player_moved',
-	TIMMY_SPAWNED = 'timmy_spawned'
+enum Events {
+	NONE,
+	GAME_STARTED,
+	PLAYER_MOVED,
+	PLAYER_DAMAGED,
+	PLAYER_DIED,
+	TIMMY_SPAWNED,
+	SHOT_ENVIRONMENT,
 }
 
 enum Recipient {
 	ALL_MEMBERS = -2, 
-	ALL_MINUS_HOST = -1
+	ALL_MINUS_HOST = -1,
 	HOST = 0
 }
 
@@ -34,6 +34,7 @@ enum LobbyVisibility {
 
 const EVENT_OCCURRED: String = 'event'
 const EVENT_DATA: String = 'data'
+const PACKET_SENDER_KEY: String = 'sender'
 
 # Steam variables.
 var IS_OWNED: bool = false
@@ -98,8 +99,6 @@ func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
 	var SEND_TYPE: int = Steam.P2P_SEND_RELIABLE
 	var CHANNEL: int = 0
 	
-	packet_data['from'] = STEAM_ID
-	
 	# Create a data array to send the data through
 	var DATA: PoolByteArray = []
 	DATA.append_array(var2bytes(packet_data))
@@ -115,6 +114,10 @@ func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
 		for member in lobby_members:
 			Steam.sendP2PPacket(member, DATA, SEND_TYPE, CHANNEL)
 	
+	# Send the packet to lobby host.
+	elif target == Recipient.HOST:
+		Steam.sendP2PPacket(Steam.getLobbyOwner(lobby_id), DATA, SEND_TYPE, CHANNEL)
+	
 	# Send to specific Recipient.
 	else: Steam.sendP2PPacket(target, DATA, SEND_TYPE, CHANNEL)
 
@@ -128,16 +131,18 @@ func _read_P2P_Packet() -> void:
 		if PACKET.empty() or PACKET == null:
 			Logging.warn('Read an empty packet with non-zero size.')
 		
-		var SENDER: int = PACKET['steam_id_remote']  # Steam ID.
-		var READABLE_PACKET: Dictionary = bytes2var(PACKET['data'])
+		var sender: int = PACKET['steam_id_remote']  # Steam ID.
+		var readable_packet: Dictionary = bytes2var(PACKET['data'])
 		
-		Logging.debug('Packet read from %s: %s' % [
-			Steam.getFriendPersonaName(SENDER), str(READABLE_PACKET)
-		])
+		readable_packet[PACKET_SENDER_KEY] = sender
+		
+		# Logging.debug('Packet read from %s: %s' % [
+		#	Steam.getFriendPersonaName(sender), str(readable_packet)
+		# ])
 		
 		# Deal with packet data.
-		var event: String = READABLE_PACKET.get(EVENT_OCCURRED, null)
-		if event: emit_signal(event, READABLE_PACKET)
+		var event: int = readable_packet.get(EVENT_OCCURRED, Events.NONE)
+		if event != Events.NONE: emit_signal('event_occurred', event, readable_packet)
 
 
 func _read_All_P2P_Packets(read_count: int = 0):
@@ -260,7 +265,7 @@ func leave_Lobby() -> void:
 		
 		# Close session with all users
 		for member in lobby_members:
-			if member['steam_id'] != Global.STEAM_ID:
+			if member != Global.STEAM_ID:
 				Logging.warn("Closing session with user: " + member['steam_name'])
 				Steam.closeP2PSessionWithUser(member['steam_id'])
 		
@@ -284,3 +289,12 @@ func _on_Lobby_Chat_Update(_lobby_id: int, changed_id: int, making_change_id: in
 	lobby_members = _get_lobby_members()
 	emit_signal('player_list_changed', lobby_members)
 	Logging.debug('Lobby chat update: %d (changed_id), %d (making_change_id)' % [changed_id, making_change_id])
+
+
+func emit_event(event: int, data: Array, recipient: int) -> void:
+	var message: Dictionary = {
+		Global.EVENT_OCCURRED: event,
+		Global.EVENT_DATA: data
+	}
+	
+	Global.send_P2P_Packet(recipient, message)

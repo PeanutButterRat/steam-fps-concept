@@ -1,15 +1,20 @@
 extends KinematicBody
 
 
+signal died
+
 onready var camera: Camera = $'%Camera'
-onready var x_label: Label = $'%X'
-onready var y_label: Label = $'%Y'
-onready var z_label: Label = $'%Z'
+onready var position_label: Label = $'%Position'
+onready var healthbar: ProgressBar = $'%ProgressBar'
+onready var ammo_label: Label = $'%AmmoCount'
+onready var current_weapon: Spatial = $'%Rifle'
+onready var raycast: RayCast = $'%RayCast'
 
 const ACCELERATION_DEFAULT: = 10
 const ACCELERATION_AIR_ACTIVE: = 5
 const ACCELERATION_AIR_IDLE: = 1
 const SLIDE_TIME: float = 0.2
+const MAX_HEALTH: float = 100.0
 
 var acceleration: = ACCELERATION_DEFAULT
 var mouse_sensitivity: float = 0.1
@@ -29,18 +34,13 @@ var gravity_force := 30
 var jump_force := 10
 var sprinting: bool = false
 var vector: Vector3 = Vector3.ZERO
-var saved_velocity: Vector3 = Vector3.ZERO
-var saved_position: Vector3 = Vector3.ZERO
+
+var health: float = MAX_HEALTH
 
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-
-
-func _process(_delta: float) -> void:
-	if Input.is_action_pressed("ui_cancel"):
-		get_tree().quit()
-
+	healthbar.value = health
 
 func _physics_process(delta: float) -> void:
 	var horiziontal_rotation = global_transform.basis.get_euler().y  # Direction the player is looking in.
@@ -70,11 +70,6 @@ func _physics_process(delta: float) -> void:
 	
 	if Console.is_focused():
 		input = Vector3.ZERO
-		
-		if is_on_floor():
-			velocity.y = 0
-			snap = -get_floor_normal() * 5
-			acceleration = ACCELERATION_DEFAULT
 	
 	var movement: Vector3 = input * movement_speed  # Horizontal velocity vector.
 	movement.y = velocity.y  # Match the y velocity components so that when the velocity is interpolated, gravity is unaffected.
@@ -85,19 +80,18 @@ func _physics_process(delta: float) -> void:
 		vector = Vector3.ZERO
 	
 	velocity = velocity.linear_interpolate(movement, acceleration * delta)  # Apply acceleration
-	saved_velocity = saved_velocity.linear_interpolate(movement, acceleration * delta)  # Apply acceleration
-	
 	velocity = move_and_slide_with_snap(velocity, snap, Vector3.UP, true, 5, 1, true)
 	
-	var message: Dictionary = {
-		Global.EVENT_OCCURRED: 'player_moved'
-	}
 	
-	x_label.text = str(stepify(translation.x, 0.01))
-	y_label.text = str(stepify(translation.y, 0.01))
-	z_label.text = str(stepify(translation.z, 0.01))
+	position_label.text = str(translation)
 	
-	Global.send_P2P_Packet(Global.Recipient.ALL_MINUS_HOST, message)
+	var data: Array = [transform]
+	Global.emit_event(Global.Events.PLAYER_MOVED, data, Global.Recipient.ALL_MINUS_HOST)
+	
+	if Input.is_action_just_pressed('shoot'):
+		current_weapon.shoot()
+	elif Input.is_action_just_pressed('reload'):
+		current_weapon.reload()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -105,3 +99,36 @@ func _unhandled_input(event: InputEvent) -> void:
 		self.rotate_y(deg2rad(-event.relative.x * mouse_sensitivity))  # Horizontal rotation.
 		camera.rotate_x(deg2rad(-event.relative.y * mouse_sensitivity))  # Vertical rotation.
 		camera.rotation.x = clamp(camera.rotation.x, deg2rad(-89), deg2rad(89))
+
+
+func _on_Rifle_fired_weapon(weapon) -> void:
+	if raycast.is_colliding() and raycast.get_collider() is Node:
+		var collider: Node = raycast.get_collider()
+		var data: Array
+		var recipient: int
+		
+		if collider.is_in_group('online_players'):
+			data = [weapon.damage]
+			recipient = collider.steam_id
+			Global.emit_event(Global.Events.PLAYER_DAMAGED, data, recipient)
+		
+		if collider.is_in_group('world'):
+			data = [raycast.get_collision_point()]
+			Global.emit_event(Global.Events.SHOT_ENVIRONMENT, data, Global.Recipient.ALL_MEMBERS)
+
+
+func _on_Rifle_ammo_count_changed() -> void:
+	ammo_label.text = '%d / %d' % [current_weapon.ammo_count, current_weapon.mag_capacity]
+
+
+func damage(damage: float) -> void:
+	health -= damage
+	if health <= 0:
+		kill()
+		
+	healthbar.value = health
+
+
+func kill() -> void:
+	health = MAX_HEALTH
+	emit_signal('died')
