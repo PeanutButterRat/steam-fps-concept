@@ -7,8 +7,9 @@
 
 [sub_resource type="CapsuleMesh" id=2]
 
-[node name="Player" type="KinematicBody" groups=["online_players"]]
-collision_layer = 0
+[node name="Player" type="KinematicBody"]
+collision_layer = 7
+collision_mask = 7
 script = ExtResource( 1 )
 
 [node name="Hitbox" type="CollisionShape" parent="."]
@@ -26,5 +27,6 @@ pixel_size = 0.02
 billboard = 1
 text = "Player"
 
-[node name="scene" parent="." instance=ExtResource( 2 )]
+[node name="Rifle" parent="." instance=ExtResource( 2 )]
+unique_name_in_owner = true
 transform = Transform( 0.463004, 0, 0, 0, 0.447227, -0.119834, 0, 0.119834, 0.447227, 0, 0.187036, 0.81264 )

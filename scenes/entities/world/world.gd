@@ -6,6 +6,7 @@ const MAX_ENTITIES: int = 40
 export var OnlinePlayerScene: PackedScene
 export var TimmyScene: PackedScene
 
+onready var collider: StaticBody = $'%StaticBody'
 onready var spawn: Spatial = $'%Spawn'
 onready var local_player: KinematicBody = $'%LocalPlayer'
 onready var command_spawn_timmy: FuncRef = funcref(self, '_on_Command_spawn_timmy')
@@ -22,8 +23,11 @@ func _ready() -> void:
 	Console.register('clear_entities', command_clear_entities)
 	local_player.connect('died', self, '_on_LocalPlayer_died')
 	
+	collider.add_to_group(Global.GROUPS.World)
 	_update_players(Global.lobby_members)
-
+	
+	for wall in $Walls.get_children():
+		wall.add_to_group(Global.GROUPS.World)
 
 func _update_players(players: Array) -> void:
 	# Check for players that left the game.
@@ -39,7 +43,7 @@ func _update_players(players: Array) -> void:
 			online_players[player] = instance
 			instance.translation = spawn.translation
 			instance.set_nametag(Steam.getFriendPersonaName(player))
-			instance.set_steam_id(player)
+			instance.steam_id = player
 			add_child(instance)
 
 
@@ -60,15 +64,11 @@ func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
 	if event == Global.Events.TIMMY_SPAWNED:
 		var timmy: KinematicBody = TimmyScene.instance()
 		timmy.translation = data[0]
-		add_child(timmy)
-	
-	elif event == Global.Events.PLAYER_MOVED:
-		var transformation: Transform = data[0]
-		online_players[sender].transform = transformation
+		add_entity(timmy)
+
 	
 	elif event == Global.Events.SHOT_ENVIRONMENT:
-		var wall: CSGCylinder = CSGCylinder.new()
-		wall.scale = Vector3(1, 20, 1)
+		var wall: CSGSphere = CSGSphere.new()
 		wall.translation = data[0]
 		
 		add_entity(wall)
@@ -77,6 +77,15 @@ func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
 		var player = data[0]
 		if player in online_players:
 			online_players[player].translation = spawn.translation
+	
+	elif event == Global.Events.TIMMY_DIED:
+		var id: int = data[0]
+		for index in len(entities):
+			var entity: Node = entities[index]
+			if entity.get_instance_id() == id:
+				entities.remove(index)
+				entity.queue_free()
+				break
 
 
 func _on_Command_clear_entities(args: Array) -> String:

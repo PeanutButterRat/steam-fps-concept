@@ -4,11 +4,13 @@ extends KinematicBody
 signal died
 
 onready var camera: Camera = $'%Camera'
-onready var position_label: Label = $'%Position'
+onready var raycast_label: Label = $'%RaycastLabel'
 onready var healthbar: ProgressBar = $'%ProgressBar'
-onready var ammo_label: Label = $'%AmmoCount'
 onready var current_weapon: Spatial = $'%Rifle'
 onready var raycast: RayCast = $'%RayCast'
+onready var ammo_label: Label = $'%AmmoCount'
+onready var position_label: Label = $'%Position'
+onready var animations: AnimationPlayer = $'%AnimationPlayer'
 
 const ACCELERATION_DEFAULT: = 10
 const ACCELERATION_AIR_ACTIVE: = 5
@@ -40,7 +42,9 @@ var health: float = MAX_HEALTH
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	Global.connect('event_occurred', self, '_on_Global_event_occurred')
 	healthbar.value = health
+
 
 func _physics_process(delta: float) -> void:
 	var horiziontal_rotation = global_transform.basis.get_euler().y  # Direction the player is looking in.
@@ -84,14 +88,10 @@ func _physics_process(delta: float) -> void:
 	
 	
 	position_label.text = str(translation)
+	raycast_label.text = raycast.get_collider().name if raycast.is_colliding() else 'Nothing'
 	
 	var data: Array = [transform]
-	Global.emit_event(Global.Events.PLAYER_MOVED, data, Global.Recipient.ALL_MINUS_HOST)
-	
-	if Input.is_action_just_pressed('shoot'):
-		current_weapon.shoot()
-	elif Input.is_action_just_pressed('reload'):
-		current_weapon.reload()
+	Global.emit_event(Global.Events.PLAYER_MOVED, data, Global.Recipient.ALL_MINUS_CLIENT)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -99,22 +99,38 @@ func _unhandled_input(event: InputEvent) -> void:
 		self.rotate_y(deg2rad(-event.relative.x * mouse_sensitivity))  # Horizontal rotation.
 		camera.rotate_x(deg2rad(-event.relative.y * mouse_sensitivity))  # Vertical rotation.
 		camera.rotation.x = clamp(camera.rotation.x, deg2rad(-89), deg2rad(89))
+	elif event.is_action_pressed('shoot'):
+		current_weapon.shoot()
+	elif event.is_action_pressed('reload'):
+		current_weapon.reload()
 
 
 func _on_Rifle_fired_weapon(weapon) -> void:
+	Global.emit_event(Global.Events.WEAPON_FIRED, [Global.STEAM_ID], Global.Recipient.ALL_MINUS_CLIENT)
+	
 	if raycast.is_colliding() and raycast.get_collider() is Node:
 		var collider: Node = raycast.get_collider()
 		var data: Array
 		var recipient: int
-		
-		if collider.is_in_group('online_players'):
+		var hit: bool = false
+		if collider.is_in_group(Global.GROUPS.OnlinePlayers):
+			hit = true
 			data = [weapon.damage]
 			recipient = collider.steam_id
 			Global.emit_event(Global.Events.PLAYER_DAMAGED, data, recipient)
 		
-		if collider.is_in_group('world'):
+		elif collider.is_in_group(Global.GROUPS.World):
 			data = [raycast.get_collision_point()]
 			Global.emit_event(Global.Events.SHOT_ENVIRONMENT, data, Global.Recipient.ALL_MEMBERS)
+		
+		elif collider.is_in_group(Global.GROUPS.Timmy):
+			hit = true
+			data = [collider.get_instance_id(), current_weapon.damage]
+			Global.emit_event(Global.Events.TIMMY_DAMAGED, data, Global.Recipient.ALL_MEMBERS)
+		
+		if hit:
+			animations.stop()
+			animations.play('hitmarker')
 
 
 func _on_Rifle_ammo_count_changed() -> void:
@@ -132,3 +148,9 @@ func damage(damage: float) -> void:
 func kill() -> void:
 	health = MAX_HEALTH
 	emit_signal('died')
+
+
+func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
+	if event == Global.Events.PLAYER_DAMAGED:
+		var amount: float = packet[Global.EVENT_DATA][0]
+		damage(amount)

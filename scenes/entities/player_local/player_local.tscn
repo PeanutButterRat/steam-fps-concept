@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://scenes/entities/player_local/player_local.gd" type="Script" id=1]
 [ext_resource path="res://rifle.tscn" type="PackedScene" id=2]
@@ -6,6 +6,36 @@
 [sub_resource type="CapsuleShape" id=6]
 
 [sub_resource type="CapsuleMesh" id=2]
+
+[sub_resource type="Animation" id=7]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Hitmarker:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0 ) ]
+}
+
+[sub_resource type="Animation" id=8]
+resource_name = "hitmarker"
+tracks/0/type = "value"
+tracks/0/path = NodePath("Hitmarker:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
 
 [node name="Player" type="KinematicBody"]
 collision_layer = 2
@@ -33,6 +63,7 @@ unique_name_in_owner = true
 enabled = true
 cast_to = Vector3( 0, 0, -500 )
 collision_mask = 5
+collide_with_areas = true
 
 [node name="DebugHUD" type="Panel" parent="."]
 anchor_right = 0.255
@@ -56,13 +87,13 @@ margin_bottom = 119.0
 
 [node name="Position" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
 margin_right = 478.0
-margin_bottom = 35.0
+margin_bottom = 25.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Position"]
 margin_right = 237.0
-margin_bottom = 35.0
+margin_bottom = 25.0
 size_flags_horizontal = 3
 size_flags_vertical = 5
 text = "Position:"
@@ -73,22 +104,22 @@ valign = 1
 unique_name_in_owner = true
 margin_left = 241.0
 margin_right = 478.0
-margin_bottom = 35.0
+margin_bottom = 25.0
 size_flags_horizontal = 3
 size_flags_vertical = 5
 align = 1
 valign = 1
 
 [node name="Health" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_top = 39.0
+margin_top = 29.0
 margin_right = 478.0
-margin_bottom = 74.0
+margin_bottom = 55.0
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Health"]
 margin_left = 95.0
 margin_right = 141.0
-margin_bottom = 35.0
+margin_bottom = 26.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 text = "Health:"
@@ -98,23 +129,24 @@ valign = 1
 [node name="ProgressBar" type="ProgressBar" parent="DebugHUD/MarginContainer/VerticalContainer/Health"]
 unique_name_in_owner = true
 margin_left = 241.0
-margin_top = 10.0
+margin_top = 6.0
 margin_right = 478.0
-margin_bottom = 24.0
+margin_bottom = 20.0
 size_flags_horizontal = 3
 size_flags_vertical = 4
 rounded = true
 
 [node name="Ammo" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_top = 78.0
+unique_name_in_owner = true
+margin_top = 59.0
 margin_right = 478.0
-margin_bottom = 114.0
+margin_bottom = 84.0
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Ammo"]
 margin_left = 95.0
 margin_right = 142.0
-margin_bottom = 36.0
+margin_bottom = 25.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 text = "Ammo:"
@@ -125,12 +157,90 @@ valign = 1
 unique_name_in_owner = true
 margin_left = 345.0
 margin_right = 374.0
-margin_bottom = 36.0
+margin_bottom = 25.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 text = "0 / 0"
 align = 1
 valign = 1
+
+[node name="Raycast" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
+margin_top = 88.0
+margin_right = 478.0
+margin_bottom = 114.0
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Raycast"]
+margin_left = 84.0
+margin_right = 153.0
+margin_bottom = 26.0
+size_flags_horizontal = 6
+size_flags_vertical = 5
+text = "Looking at:"
+align = 1
+valign = 1
+
+[node name="RaycastLabel" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Raycast"]
+unique_name_in_owner = true
+margin_left = 359.0
+margin_right = 359.0
+margin_bottom = 26.0
+size_flags_horizontal = 6
+size_flags_vertical = 5
+align = 1
+valign = 1
+
+[node name="Crosshair" type="Node" parent="DebugHUD"]
+
+[node name="Horizontal" type="Line2D" parent="DebugHUD/Crosshair"]
+position = Vector2( 960, 540 )
+points = PoolVector2Array( 1, -3, 1, -5 )
+width = 15.0
+default_color = Color( 1, 1, 1, 1 )
+
+[node name="Vertical" type="Line2D" parent="DebugHUD/Crosshair"]
+position = Vector2( 965, 537 )
+rotation = -1.57079
+points = PoolVector2Array( 1, -3, 1, -5 )
+width = 15.0
+default_color = Color( 1, 1, 1, 1 )
+
+[node name="Hitmarker" type="Node2D" parent="DebugHUD/Crosshair"]
+modulate = Color( 1, 1, 1, 0 )
+
+[node name="UpperRight" type="Line2D" parent="DebugHUD/Crosshair/Hitmarker"]
+position = Vector2( 973, 530 )
+rotation = -0.785397
+points = PoolVector2Array( 1, -3, 1, -5 )
+width = 15.0
+default_color = Color( 1, 1, 1, 1 )
+
+[node name="LowerLeft" type="Line2D" parent="DebugHUD/Crosshair/Hitmarker"]
+position = Vector2( 954, 549 )
+rotation = -0.785397
+points = PoolVector2Array( 1, -3, 1, -5 )
+width = 15.0
+default_color = Color( 1, 1, 1, 1 )
+
+[node name="UpperLeft" type="Line2D" parent="DebugHUD/Crosshair/Hitmarker"]
+position = Vector2( 948, 529 )
+rotation = 0.785397
+points = PoolVector2Array( 1, -3, 1, -5 )
+width = 15.0
+default_color = Color( 1, 1, 1, 1 )
+
+[node name="LowerRight" type="Line2D" parent="DebugHUD/Crosshair/Hitmarker"]
+position = Vector2( 967, 548 )
+rotation = 0.785397
+points = PoolVector2Array( 1, -3, 1, -5 )
+width = 15.0
+default_color = Color( 1, 1, 1, 1 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+root_node = NodePath("../DebugHUD/Crosshair")
+anims/RESET = SubResource( 7 )
+anims/hitmarker = SubResource( 8 )
 
 [connection signal="ammo_count_changed" from="Camera/Rifle" to="." method="_on_Rifle_ammo_count_changed"]
 [connection signal="fired_weapon" from="Camera/Rifle" to="." method="_on_Rifle_fired_weapon"]

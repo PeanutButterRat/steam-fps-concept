@@ -8,10 +8,11 @@ signal fired_weapon(weapon)
 
 const RELOAD_ANIMATION: String = 'reload'
 const FIRE_ANIMATION: String = 'shoot'
-const MAX_FIRE_RATE: float = 1000.0  # Measured in rounds per minute (rpm).
+const MAX_FIRE_RATE: float = 5.0  # Measured in shots per second.
+const MINIMUM_TIMER_LENGTH: float = 0.05
 
 export var mag_capacity: int = 30  # Max rounds per mag.
-export var fire_rate: float = 0  # Measured in rounds per minute (rpm).
+export var fire_rate: float = 0  # Measured in shots per second.
 export var damage: float = 25
 export var full_auto: bool = false
 
@@ -24,16 +25,15 @@ var ready_to_fire: bool = true
 
 func _ready() -> void:
 	animation_player.connect('animation_finished', self, '_on_AnimationPlayer_animation_finished')
+	
+	fire_rate = clamp(fire_rate, 0, MAX_FIRE_RATE)
+	var seconds_per_shot: float = MINIMUM_TIMER_LENGTH
+	if fire_rate > 0:  # Fire rate of zero means fire rate is unlocked.
+		seconds_per_shot = 1.0 / fire_rate
+	
 	add_child(shot_timer)
 	shot_timer.one_shot = true
-	
-	var seconds_per_shot: float
-	if fire_rate <= 0:
-		seconds_per_shot = MAX_FIRE_RATE
-	else:
-		seconds_per_shot = min(60 / fire_rate, 60 / MAX_FIRE_RATE)
-	
-	shot_timer.set_wait_time(.001)
+	shot_timer.set_wait_time(seconds_per_shot)
 
 
 func shoot() -> void:

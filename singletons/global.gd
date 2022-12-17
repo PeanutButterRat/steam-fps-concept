@@ -17,11 +17,20 @@ enum Events {
 	PLAYER_DIED,
 	TIMMY_SPAWNED,
 	SHOT_ENVIRONMENT,
+	TIMMY_DAMAGED,
+	TIMMY_DIED,
+	WEAPON_FIRED,
+	WEAPON_RELOADED,
+	WEAPON_SWAPPED,
+	SPRINT_STARTED,
+	SPRINT_ENDED,
+	CROUCHED,
+	UNCROUCHED
 }
 
 enum Recipient {
 	ALL_MEMBERS = -2, 
-	ALL_MINUS_HOST = -1,
+	ALL_MINUS_CLIENT = -1,
 	HOST = 0
 }
 
@@ -30,6 +39,12 @@ enum LobbyVisibility {
 	FRIENDS, 
 	PUBLIC, 
 	INVISIBLE
+}
+
+const GROUPS: Dictionary = {
+	'Timmy': 'Timmy',
+	'OnlinePlayers': 'OnlinePlayers',
+	'World': 'World'
 }
 
 const EVENT_OCCURRED: String = 'event'
@@ -92,7 +107,7 @@ func _initialize_Steam() -> void:
 
 func _make_P2P_Handshake() -> void:
 	Logging.debug('Sending P2P handshake to the lobby.')
-	send_P2P_Packet(Recipient.ALL_MINUS_HOST, {'message': 'handshake'})
+	send_P2P_Packet(Recipient.ALL_MINUS_CLIENT, {'message': 'handshake'})
 
 
 func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
@@ -102,9 +117,12 @@ func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
 	# Create a data array to send the data through
 	var DATA: PoolByteArray = []
 	DATA.append_array(var2bytes(packet_data))
-
+	
+	if lobby_id == 0:
+		Steam.sendP2PPacket(STEAM_ID, DATA, SEND_TYPE, CHANNEL)
+	
 	# Send the packet to everyone excluding the host.
-	if target == Recipient.ALL_MINUS_HOST:
+	if target == Recipient.ALL_MINUS_CLIENT:
 		for member in lobby_members:
 			if member != Global.STEAM_ID:  # Don't send the packet to yourself.
 				Steam.sendP2PPacket(member, DATA, SEND_TYPE, CHANNEL)
@@ -115,11 +133,12 @@ func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
 			Steam.sendP2PPacket(member, DATA, SEND_TYPE, CHANNEL)
 	
 	# Send the packet to lobby host.
-	elif target == Recipient.HOST:
+	elif target == Recipient.HOST and lobby_id != 0:
 		Steam.sendP2PPacket(Steam.getLobbyOwner(lobby_id), DATA, SEND_TYPE, CHANNEL)
 	
 	# Send to specific Recipient.
-	else: Steam.sendP2PPacket(target, DATA, SEND_TYPE, CHANNEL)
+	else:
+		Steam.sendP2PPacket(target, DATA, SEND_TYPE, CHANNEL)
 
 
 func _read_P2P_Packet() -> void:
@@ -136,17 +155,15 @@ func _read_P2P_Packet() -> void:
 		
 		readable_packet[PACKET_SENDER_KEY] = sender
 		
-		# Logging.debug('Packet read from %s: %s' % [
-		#	Steam.getFriendPersonaName(sender), str(readable_packet)
-		# ])
-		
 		# Deal with packet data.
 		var event: int = readable_packet.get(EVENT_OCCURRED, Events.NONE)
-		if event != Events.NONE: emit_signal('event_occurred', event, readable_packet)
+		if event != Events.NONE:
+			emit_signal('event_occurred', event, readable_packet)
 
 
 func _read_All_P2P_Packets(read_count: int = 0):
-	if read_count >= PACKET_READ_LIMIT: return  # Reached the limit on packet-reading.
+	if read_count >= PACKET_READ_LIMIT:
+		return  # Reached the limit on packet-reading.
 	elif Steam.getAvailableP2PPacketSize(0) > 0:
 		_read_P2P_Packet()
 		_read_All_P2P_Packets(read_count + 1)

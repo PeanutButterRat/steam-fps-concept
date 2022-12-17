@@ -1,13 +1,37 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://assets/sounds/ohio.mp3" type="AudioStream" id=1]
-[ext_resource path="res://scenes/entities/player_online/PlayerOnline.tscn" type="PackedScene" id=2]
-[ext_resource path="res://scenes/entities/timmy/timmy.gd" type="Script" id=3]
+[ext_resource path="res://scenes/entities/timmy/timmy.gd" type="Script" id=1]
+[ext_resource path="res://rifle.tscn" type="PackedScene" id=2]
+[ext_resource path="res://assets/sounds/ohio.mp3" type="AudioStream" id=3]
 
-[node name="Timmy" instance=ExtResource( 2 )]
-script = ExtResource( 3 )
+[sub_resource type="CapsuleShape" id=6]
 
-[node name="AudioSteam" type="AudioStreamPlayer3D" parent="." index="2"]
+[sub_resource type="CapsuleMesh" id=2]
+
+[node name="Timmy" type="KinematicBody"]
+collision_layer = 4
+collision_mask = 5
+script = ExtResource( 1 )
+
+[node name="Hitbox" type="CollisionShape" parent="."]
+transform = Transform( 0.75, 0, 0, 0, -3.27835e-08, -1, 0, 0.75, -4.37114e-08, 0, 0, 0 )
+shape = SubResource( 6 )
+
+[node name="Skin" type="MeshInstance" parent="Hitbox"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 7.10543e-15, 1, 0, 0, 0 )
+mesh = SubResource( 2 )
+
+[node name="Nametag" type="Label3D" parent="."]
 unique_name_in_owner = true
-stream = ExtResource( 1 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.73929, 0 )
+pixel_size = 0.02
+billboard = 1
+text = "Player"
+
+[node name="AudioSteam" type="AudioStreamPlayer3D" parent="."]
+unique_name_in_owner = true
+stream = ExtResource( 3 )
 autoplay = true
+
+[node name="scene" parent="." instance=ExtResource( 2 )]
+transform = Transform( -0.463004, -1.04762e-08, -3.90978e-08, 0, 0.447227, -0.119834, 4.04771e-08, -0.119834, -0.447227, 0, 0.187036, -0.990651 )
