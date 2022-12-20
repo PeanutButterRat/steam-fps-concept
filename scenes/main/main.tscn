@@ -13,4 +13,5 @@ WorldScene = ExtResource( 3 )
 [node name="MenuLayer" type="CanvasLayer" parent="."]
 layer = 0
 
-[node name="PopupPanel" parent="MenuLayer" instance=ExtResource( 5 )]
+[node name="Menu" parent="MenuLayer" instance=ExtResource( 5 )]
+unique_name_in_owner = false

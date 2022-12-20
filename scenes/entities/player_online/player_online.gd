@@ -3,7 +3,7 @@ extends KinematicBody
 
 onready var nametag: Label3D = $'%Nametag'
 onready var steam_id: int
-onready var rifle: Spatial = $'%Rifle'
+onready var weapon: Spatial = $'%Rifle'
 
 
 func _ready() -> void:
@@ -17,13 +17,13 @@ func set_nametag(string: String) -> void:
 
 func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
 	var player: int = packet[Global.PACKET_SENDER_KEY]
-	if player != Global.STEAM_ID:
+	if player != steam_id:
 		return
 	
 	if event == Global.Events.PLAYER_MOVED:
-		var position: Vector3 = packet[Global.EVENT_DATA][0]
-		translation = position
+		var update: Transform = packet[Global.EVENT_DATA][0]
+		transform = update
 	elif event == Global.Events.WEAPON_FIRED:
-		rifle.shoot()
+		weapon.shoot()
 	elif event == Global.Events.WEAPON_RELOADED:
-		rifle.reload()
+		weapon.reload()

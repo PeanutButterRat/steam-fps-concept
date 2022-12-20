@@ -1,8 +1,6 @@
 extends Button
 
 
-signal remapped_control(button, event)  # Emits to button_remap_container.
-
 const MOUSE_BUTTON_STRINGS = {
 	1: "Left Click (Mouse 1)",
 	2: "Right Click (Mouse 2)",
@@ -23,53 +21,66 @@ var action: String
 
 
 func initialize(input_check: FuncRef, new_event: InputEvent, new_action: String) -> void:
-	connect('remapped_control', Settings, "_on_Button_remapped_control")
-	set_process_unhandled_input(true)
+	Settings.connect('remapped_control', self, "_on_Button_remapped_control")
+	set_process_input(true)
 	self._input_check = input_check
 	self.action = new_action
 	self.event = new_event
 	toggle_mode = true
-	text = convert_input_event_to_text(self.event)
+	text = convert_InputEvent_to_text(self.event)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not pressed: return
-	
+func _input(current_event: InputEvent) -> void:
+
+	if not pressed: 
+		return
+	print('Type check: ', str(_input_check.call_func(current_event)))
 	var input_registered: bool = false
 
-	if event.is_action_pressed("ui_cancel"):  # Cancel the re-map.
+	if current_event.is_action_pressed("ui_cancel"):  # Cancel the re-map.
 		input_registered = true
 	
-	elif event.is_action_pressed("delete"):  # Delete the binding.
+	elif current_event.is_action_pressed("delete"):  # Delete the binding.
 		input_registered = true
-		emit_signal("remapped_control", self, null)
+		InputMap.action_erase_event(self.action, self.event)
+		set_event(null)
 	
-	elif _input_check.call_func(event):  # Normal rebind.
+	elif _input_check.call_func(current_event):  # Normal rebind.
+		print('Found a rebind')
 		input_registered = true
-		emit_signal("remapped_control", self, event)
+		if self.event != null:
+			InputMap.action_erase_event(self.action, self.event)
+		
+		InputMap.action_add_event(self.action, current_event)
+		
+		set_event(current_event)
+		Settings.emit_signal("remapped_control", self)
 	
-	# Unfocus the button.
-	if input_registered:
+	if input_registered:  # Unfocus the button.
 		pressed = false
 		release_focus()
 		get_tree().set_input_as_handled()
 
 
-func _pressed() -> void:
-	text = "Waiting for input..."
-
-
 func _toggled(button_pressed: bool) -> void:
-	if button_pressed: text = "Waiting for input..."
-	else: text = convert_input_event_to_text(self.event)
+	if button_pressed:
+		text = "Waiting for input..."
+	else:
+		text = convert_InputEvent_to_text(self.event)
 
 
 func set_event(new_event: InputEvent) -> void:
+	if self.event != null:
+		InputMap.action_erase_event(self.action, self.event)
+	
+	if new_event != null:
+		InputMap.action_add_event(self.action, new_event)
+	
 	event = new_event
-	text = convert_input_event_to_text(self.event)
+	text = convert_InputEvent_to_text(self.event)
 
 
-func convert_input_event_to_text(input_event: InputEvent) -> String:
+func convert_InputEvent_to_text(input_event: InputEvent) -> String:
 	if input_event is InputEventJoypadButton:
 		return 'Joypad Button'
 	elif input_event is InputEventKey:
@@ -80,3 +91,11 @@ func convert_input_event_to_text(input_event: InputEvent) -> String:
 		return 'Unassigned'
 	else:
 		return 'Error'
+
+
+func _on_Button_remapped_control(button) -> void:
+	if button.get_instance_id() == self.get_instance_id():
+		return
+	
+	if convert_InputEvent_to_text(button.event) == convert_InputEvent_to_text(self.event):
+		set_event(null)

@@ -29,8 +29,10 @@ func _ready() -> void:
 	
 	# Initialize the label and store references to the buttons.
 	for child in self.get_children():
-		if child is Button: _buttons.append(child)
-		elif child is Label: child.text = _action.capitalize()
+		if child is Button:
+			_buttons.append(child)
+		elif child is Label:
+			child.text = _action.capitalize()
 	
 	# Initialize the InputEvents for the buttons.
 	for index in len(_buttons):
@@ -50,5 +52,14 @@ func _is_controller_input(event: InputEvent) -> bool:
 	return event is InputEventJoypadButton
 
 
+func save() -> void:
+	var bindings: Array = []
+	
+	for child in get_children():
+		if child is Button and child.event != null:
+			bindings.append(child.event)
+	
+	Settings.save(CONFIG_SECTION, _action, bindings)
+
 func _exit_tree() -> void:
-	Settings.save(CONFIG_SECTION, _action, InputMap.get_action_list(_action))
+	save()
