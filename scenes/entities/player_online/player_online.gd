@@ -1,14 +1,18 @@
 extends KinematicBody
 
 
+const MAX_HEALTH: float = 100.0
+
 onready var nametag: Label3D = $'%Nametag'
 onready var steam_id: int
 onready var weapon: Spatial = $'%Rifle'
 
 
+var health: float = MAX_HEALTH
+
+
 func _ready() -> void:
 	Global.connect('event_occurred', self, '_on_Global_event_occurred')
-	add_to_group(Global.GROUPS.OnlinePlayers)
 
 
 func set_nametag(string: String) -> void:
@@ -27,3 +31,20 @@ func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
 		weapon.shoot()
 	elif event == Global.Events.WEAPON_RELOADED:
 		weapon.reload()
+
+
+func damage(damage: float) -> bool:
+	health -= damage
+	var killed: bool = false
+	
+	if health <= 0:
+		Global.emit_event(Global.Events.PLAYER_DIED, [steam_id], Global.Recipient.ALL_MEMBERS)
+		killed = true
+	else:
+		Global.emit_event(Global.Events.PLAYER_DAMAGED, [health], Global.Recipient.ALL_MEMBERS)
+	
+	return killed
+
+
+func kill() -> void:
+	Global.emit_event(Global.Events.PLAYER_DIED, [steam_id], Global.Recipient.ALL_MEMBERS)

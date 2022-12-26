@@ -11,6 +11,7 @@ onready var raycast: RayCast = $'%RayCast'
 onready var ammo_label: Label = $'%AmmoCount'
 onready var position_label: Label = $'%Position'
 onready var animations: AnimationPlayer = $'%AnimationPlayer'
+onready var hud: Control = $"%HUD"
 
 const ACCELERATION_DEFAULT: = 10
 const ACCELERATION_AIR_ACTIVE: = 5
@@ -37,7 +38,7 @@ var jump_force := 10
 var sprinting: bool = false
 var vector: Vector3 = Vector3.ZERO
 
-var health: float = MAX_HEALTH
+var health: float = MAX_HEALTH setget set_health
 
 
 func _ready() -> void:
@@ -63,7 +64,7 @@ func _physics_process(delta: float) -> void:
 		snap = -get_floor_normal() * 5
 		acceleration = ACCELERATION_DEFAULT
 		
-		if Input.is_action_just_pressed("jump"):
+		if Input.is_action_just_pressed("jump") and not Console.focused:
 			snap = Vector3.ZERO
 			velocity.y =  jump_force
 		
@@ -72,7 +73,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity_force * delta
 		acceleration = ACCELERATION_AIR_ACTIVE if input else ACCELERATION_AIR_IDLE
 	
-	if Console.is_focused():
+	if Console.focused:
 		input = Vector3.ZERO
 	
 	var movement: Vector3 = input * movement_speed  # Horizontal velocity vector.
@@ -112,41 +113,36 @@ func _on_Rifle_fired_weapon(weapon) -> void:
 		var collider: Node = raycast.get_collider()
 		var data: Array
 		var recipient: int
-		var hit: bool = false
-		if collider.is_in_group(Global.GROUPS.OnlinePlayers):
-			hit = true
-			data = [weapon.damage]
-			recipient = collider.steam_id
-			Global.emit_event(Global.Events.PLAYER_DAMAGED, data, recipient)
+		var root: Node = collider.owner
 		
-		elif collider.is_in_group(Global.GROUPS.World):
-			data = [raycast.get_collision_point()]
-			Global.emit_event(Global.Events.SHOT_ENVIRONMENT, data, Global.Recipient.ALL_MEMBERS)
+		print(collider, ' ', root)
 		
-		elif collider.is_in_group(Global.GROUPS.Timmy):
-			hit = true
-			data = [collider.get_instance_id(), current_weapon.damage]
-			Global.emit_event(Global.Events.TIMMY_DAMAGED, data, Global.Recipient.ALL_MEMBERS)
-		
-		if hit:
-			animations.stop()
-			animations.play('hitmarker')
+		if collider.has_method('damage'):
+			var killed: bool = collider.damage()
+			
+			if killed:
+				hud.kill_hitmarker()
+			elif collider.is_in_group('CriticalHitbox'):
+				hud.critical_hitmarker()
+			else:
+				hud.normal_hitmarker()
 
 
 func _on_Rifle_ammo_count_changed() -> void:
-	ammo_label.text = '%d / %d' % [current_weapon.ammo_count, current_weapon.mag_capacity]
+	hud.update_ammo_count(current_weapon.ammo_count, current_weapon.mag_capacity)
 
 
-func damage(damage: float) -> void:
-	health -= damage
+func damage(damage: float) -> bool:
+	set_health(health - damage)
 	if health <= 0:
 		kill()
-		
-	healthbar.value = health
+		return true
+	
+	return false
 
 
 func kill() -> void:
-	health = MAX_HEALTH
+	set_health(MAX_HEALTH)
 	emit_signal('died')
 
 
@@ -154,3 +150,13 @@ func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
 	if event == Global.Events.PLAYER_DAMAGED:
 		var amount: float = packet[Global.EVENT_DATA][0]
 		damage(amount)
+	elif event == Global.Events.PLAYER_TELEPORTED:
+		var position: Vector3 = packet[Global.EVENT_DATA][0]
+		translation = position
+	elif event == Global.Events.PLAYER_OP:
+		Console.enabled = not Console.enabled
+
+
+func set_health(amount: float) -> void:
+	health = amount
+	healthbar.value = amount

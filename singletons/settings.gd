@@ -1,8 +1,8 @@
 extends Node
 
 
+# warning-ignore:unused_signal
 signal remapped_control(rebound_button)
-
 
 const FILEPATH: String = 'res://settings.ini'
 

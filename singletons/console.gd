@@ -8,10 +8,14 @@ const COMMAND_COUNT_ERROR: String = 'Improper number of supplied arguments.'
 onready var commands: Dictionary = {}
 onready var default: FuncRef = funcref(self, '_default')
 
-var focused: bool = false setget focus, is_focused
+var focused: bool = false
+var enabled: bool = true
 
 
-func execute(command: String, arguments: Array) -> String:	
+func execute(command: String, arguments: Array) -> String:
+	if not enabled:
+		return 'You do not have permissions to use the console.'
+	
 	var function: FuncRef = commands.get(command, default)
 	return function.call_func(arguments)  # Return a string denoting success.
 
@@ -37,10 +41,3 @@ func deregister(command: String) -> void:
 func _default(_args: Array) -> String:
 	return "Command not found."
 
-
-func is_focused() -> bool:
-	return focused
-
-
-func focus(state: bool) -> void:
-	focused = state

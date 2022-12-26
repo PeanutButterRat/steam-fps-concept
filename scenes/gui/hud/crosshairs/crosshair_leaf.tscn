@@ -1,0 +1,7 @@
+[gd_scene format=2]
+
+[node name="Crosshair" type="Polygon2D"]
+position = Vector2( 0, 2.38419e-07 )
+scale = Vector2( 0.25, 0.396694 )
+antialiased = true
+polygon = PoolVector2Array( -8, 24, 8, 24, 8, -40.3334, -8, -40.3334 )

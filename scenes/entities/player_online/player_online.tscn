@@ -29,4 +29,4 @@ text = "Player"
 
 [node name="Rifle" parent="." instance=ExtResource( 2 )]
 unique_name_in_owner = true
-transform = Transform( 0.463004, 0, 0, 0, 0.447227, -0.119834, 0, 0.119834, 0.447227, 0, 0.187036, 0.81264 )
+transform = Transform( -0.463004, -1.04762e-08, -3.90978e-08, 0, 0.447227, -0.119834, 4.04771e-08, -0.119834, -0.447227, 0, 0.187036, -1.14383 )

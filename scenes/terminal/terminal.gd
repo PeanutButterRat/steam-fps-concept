@@ -9,6 +9,8 @@ onready var feedback: Label = $'%Feedback'
 onready var timer: Timer = $'%FeedbackTimer'
 onready var feedback_panel: Panel = $'%FeedbackPanel'
 
+var last_command: String = ''
+
 
 func _ready() -> void:
 	feedback.set("custom_colors/font_color", COLOR_ERROR)
@@ -17,11 +19,14 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed('console'):  # User opens console.
-		if visible: close()
-		else: open()
+		close() if visible else open()
 		get_tree().set_input_as_handled()
 	elif event.is_action_pressed('ui_cancel') and visible:  # User is in console and wants to leave.
 		close()
+	elif event.is_action_pressed('ui_focus_next') and visible:  # Autocomplete last command.
+		_on_LineEdit_text_changed(last_command)
+	elif event.is_action_pressed('shoot') and visible:
+		get_tree().set_input_as_handled()
 
 
 func _on_LineEdit_text_changed(new_text: String) -> void:
@@ -35,6 +40,7 @@ func _on_LineEdit_text_entered(new_text: String) -> void:
 		return
 	
 	# Parse command.
+	last_command = new_text
 	var strings: Array = new_text.split(' ', false)
 	var command: String = strings[0]
 	var arguments: Array = strings.slice(1, -1)
@@ -59,13 +65,13 @@ func _on_LineEdit_text_entered(new_text: String) -> void:
 
 
 func close() -> void:
-	Console.focus(false)
+	Console.focused = false
 	line.release_focus()  # Prevents user from entering in a command while closing prompt.
 	animations.play('hide')
 
 
 func open() -> void:
-	Console.focus(true)
+	Console.focused = true
 	show()
 	animations.play('show')
 

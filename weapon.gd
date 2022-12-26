@@ -1,6 +1,6 @@
 extends Spatial
 
-
+# warning-ignore:unused_signal
 signal reloaded
 signal ammo_count_changed
 signal aimed_down_sights

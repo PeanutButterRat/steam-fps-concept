@@ -25,7 +25,9 @@ enum Events {
 	SPRINT_STARTED,
 	SPRINT_ENDED,
 	CROUCHED,
-	UNCROUCHED
+	UNCROUCHED,
+	PLAYER_TELEPORTED,
+	PLAYER_OP
 }
 
 enum Recipient {
@@ -41,10 +43,12 @@ enum LobbyVisibility {
 	INVISIBLE
 }
 
+
 const GROUPS: Dictionary = {
 	'Timmy': 'Timmy',
 	'OnlinePlayers': 'OnlinePlayers',
-	'World': 'World'
+	'World': 'World',
+	'CriticalHitbox': 'CriticalHitbox'
 }
 
 const EVENT_OCCURRED: String = 'event'
@@ -65,6 +69,7 @@ var lobby_vote_kick: bool = false
 var lobby_max_members: int = 4
 var lobby_name: String = "Unnamed Lobby"
 
+var unique_id_counter: int = 1000 setget set_unique_id_counter
 
 
 func _ready() -> void:
@@ -85,6 +90,16 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	Steam.run_callbacks()
 	if lobby_id > 0: _read_All_P2P_Packets()  # If the player is connected, read packets.
+
+
+func generate_unique_id() -> int:
+	var id: int = unique_id_counter
+	unique_id_counter += 1
+	return id
+
+
+func set_unique_id_counter(_value: int) -> void:
+	pass
 
 
 func _initialize_Steam() -> void:

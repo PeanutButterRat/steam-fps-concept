@@ -11,8 +11,11 @@ onready var spawn: Spatial = $'%Spawn'
 onready var local_player: KinematicBody = $'%LocalPlayer'
 onready var command_spawn_timmy: FuncRef = funcref(self, '_on_Command_spawn_timmy')
 onready var command_clear_entities: FuncRef = funcref(self, '_on_Command_clear_entities')
+onready var command_teleport_player: FuncRef = funcref(self, '_on_Command_teleport_player')
+onready var command_op_player: FuncRef = funcref(self, '_on_Command_op_player')
 
-var online_players: Dictionary = {}
+
+var online_players: Dictionary = {}  # Steam_id: reference
 var entities: Array = []
 
 
@@ -21,13 +24,13 @@ func _ready() -> void:
 	Global.connect('player_list_changed', self, '_update_players')
 	Console.register('spawn_timmy', command_spawn_timmy)
 	Console.register('clear_entities', command_clear_entities)
+	Console.register('tp', command_teleport_player)
+	Console.register('op', command_op_player)
 	local_player.connect('died', self, '_on_LocalPlayer_died')
 	
 	collider.add_to_group(Global.GROUPS.World)
 	_update_players(Global.lobby_members)
-	
-	for wall in $Walls.get_children():
-		wall.add_to_group(Global.GROUPS.World)
+
 
 func _update_players(players: Array) -> void:
 	# Check for players that left the game.
@@ -58,7 +61,7 @@ func _on_Command_spawn_timmy(_arguments: Array) -> String:
 
 
 func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
-	var sender: int = packet.get(Global.PACKET_SENDER_KEY)
+	var _sender: int = packet.get(Global.PACKET_SENDER_KEY)
 	var data: Array = packet.get(Global.EVENT_DATA)
 	
 	if event == Global.Events.TIMMY_SPAWNED:
@@ -68,10 +71,7 @@ func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
 
 	
 	elif event == Global.Events.SHOT_ENVIRONMENT:
-		var wall: CSGSphere = CSGSphere.new()
-		wall.translation = data[0]
-		
-		add_entity(wall)
+		pass
 	
 	elif event == Global.Events.PLAYER_DIED:
 		var player = data[0]
@@ -82,7 +82,7 @@ func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
 		var id: int = data[0]
 		for index in len(entities):
 			var entity: Node = entities[index]
-			if entity.get_instance_id() == id:
+			if 'id' in entity and entity.id == id:
 				entities.remove(index)
 				entity.queue_free()
 				break
@@ -95,6 +95,34 @@ func _on_Command_clear_entities(args: Array) -> String:
 		entity.queue_free()
 	
 	entities.clear()
+	
+	return Console.COMMAND_SUCCESS
+
+
+func _on_Command_teleport_player(args: Array) -> String:
+	if len(args) < 0:
+		return Console.COMMAND_COUNT_ERROR
+	
+	for player_name in args:
+		for key in online_players:
+			var steam_name: String = Steam.getFriendPersonaName(key)
+			if steam_name == player_name:
+				var data: Array = [local_player.translation]
+				Global.emit_event(Global.Events.PLAYER_TELEPORTED, data, key)
+	
+	return Console.COMMAND_SUCCESS
+
+
+func _on_Command_op_player(args: Array) -> String:
+	if len(args) < 0:
+		return Console.COMMAND_COUNT_ERROR
+	
+	for player_name in args:
+		for key in online_players:
+			var steam_name: String = Steam.getFriendPersonaName(key)
+			if steam_name == player_name and key != Global.STEAM_ID:
+				var data: Array = [local_player.translation]
+				Global.emit_event(Global.Events.PLAYER_OP, data, key)
 	
 	return Console.COMMAND_SUCCESS
 
@@ -126,3 +154,9 @@ func _on_Command_kill(args: Array) -> String:
 		local_player.kill()
 	
 	return Console.COMMAND_SUCCESS
+
+
+func _enter_tree():
+	Console.deregister('_on_Command_spawn_timmy')
+	Console.deregister('_on_Command_clear_entities')
+	Console.deregister('_on_Command_teleport_player')

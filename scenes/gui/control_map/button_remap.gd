@@ -34,7 +34,7 @@ func _input(current_event: InputEvent) -> void:
 
 	if not pressed: 
 		return
-	print('Type check: ', str(_input_check.call_func(current_event)))
+	
 	var input_registered: bool = false
 
 	if current_event.is_action_pressed("ui_cancel"):  # Cancel the re-map.
@@ -46,7 +46,6 @@ func _input(current_event: InputEvent) -> void:
 		set_event(null)
 	
 	elif _input_check.call_func(current_event):  # Normal rebind.
-		print('Found a rebind')
 		input_registered = true
 		if self.event != null:
 			InputMap.action_erase_event(self.action, self.event)

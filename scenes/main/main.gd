@@ -8,7 +8,6 @@ var world: Spatial
 var lobby: Control
 
 
-
 func _ready() -> void:
 	Global.connect('event_occurred', self, '_on_Global_event_occurred')
 	
@@ -35,3 +34,6 @@ func _on_Global_event_occurred(event: int, _packet: Dictionary):
 		world = WorldScene.instance()
 		add_child(world)
 		lobby.queue_free()
+		
+		if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID:
+			Console.enabled = false

@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://scenes/gui/hud/crosshairs/crosshair_leaf.tscn" type="PackedScene" id=1]
+
+[node name="Crosshairs" type="Node2D"]
+
+[node name="Up" parent="." instance=ExtResource( 1 )]
+position = Vector2( 0, -16 )
+
+[node name="Right" parent="." instance=ExtResource( 1 )]
+position = Vector2( 16, 1.56125e-17 )
+rotation = 1.57079
+
+[node name="Down" parent="." instance=ExtResource( 1 )]
+position = Vector2( -3.1225e-17, 16 )
+rotation = 3.14159
+
+[node name="Left" parent="." instance=ExtResource( 1 )]
+position = Vector2( -16, -1.56125e-17 )
+rotation = -1.57079

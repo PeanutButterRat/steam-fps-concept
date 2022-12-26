@@ -8,29 +8,14 @@ onready var steam_id: int
 
 var velocity: Vector3 = Vector3.ZERO
 var gravity_force: float = 30
-var health = MAX_HEALTH
+var health: float
+var id: int
 
 
 func _ready() -> void:
-	Global.connect('event_occurred', self, '_on_Global_event_occurred')
 	nametag.text = 'Timmy'
-	add_to_group(Global.GROUPS.Timmy)
-
-
-func set_nametag(string: String) -> void:
-	nametag.text = string
-
-
-func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
-	if event == Global.Events.TIMMY_DAMAGED:
-		var player: int = packet[Global.PACKET_SENDER_KEY]
-		var id: int = packet[Global.EVENT_DATA][0]
-		var damage: float = packet[Global.EVENT_DATA][1]
-		
-		if id == get_instance_id():
-			health -= damage
-			if health <= 0 and player == Global.STEAM_ID:  # Only the one who kills Timmy sends the message.
-				Global.emit_event(Global.Events.TIMMY_DIED, [get_instance_id()], Global.Recipient.ALL_MEMBERS)
+	health = MAX_HEALTH
+	id = Global.generate_unique_id()
 
 
 func _physics_process(delta: float) -> void:
@@ -41,3 +26,15 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_slide(velocity)
 
+
+func damage(damage: float) -> bool:
+	health -= damage
+	var killed: bool = false
+	
+	if health <= 0:
+		Global.emit_event(Global.Events.TIMMY_DIED, [id], Global.Recipient.ALL_MEMBERS)
+		killed = true
+	else:
+		Global.emit_event(Global.Events.TIMMY_DAMAGED, [health], Global.Recipient.ALL_MEMBERS)
+	
+	return killed

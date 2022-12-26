@@ -1,0 +1,6 @@
+[gd_scene format=2]
+
+[node name="HitmarkerLeaf" type="Polygon2D"]
+position = Vector2( 1.00974e-28, 0 )
+scale = Vector2( 2.5, 1.85714 )
+polygon = PoolVector2Array( -2, 0, -4.03896e-29, -19.3846, 2, 0, -4.03896e-29, 10.2308 )
