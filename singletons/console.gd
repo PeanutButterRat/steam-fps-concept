@@ -30,14 +30,10 @@ func register(command: String, reference: FuncRef) -> void:
 	commands[command] = reference
 
 
-func deregister(command: String) -> void:
-	if not command in commands:
-		Logging.warn("Attempted to deregister nonexistent command '%s'. (Console.gd)" % command)
-		return
-	
-	commands.erase(command)
-
-
 func _default(_args: Array) -> String:
 	return "Command not found."
 
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed('jump') and enabled:
+		get_tree().set_input_as_handled()

@@ -2,7 +2,7 @@
 
 [ext_resource path="res://scenes/main/main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/gui/lobby/lobby.tscn" type="PackedScene" id=2]
-[ext_resource path="res://scenes/entities/world/world.tscn" type="PackedScene" id=3]
+[ext_resource path="res://scenes/mobs/world/world.tscn" type="PackedScene" id=3]
 [ext_resource path="res://scenes/gui/menu_options/menu_options.tscn" type="PackedScene" id=5]
 
 [node name="Main" type="Node"]
@@ -13,5 +13,4 @@ WorldScene = ExtResource( 3 )
 [node name="MenuLayer" type="CanvasLayer" parent="."]
 layer = 0
 
-[node name="Menu" parent="MenuLayer" instance=ExtResource( 5 )]
-unique_name_in_owner = false
+[node name="OptionsMenu" parent="MenuLayer" instance=ExtResource( 5 )]

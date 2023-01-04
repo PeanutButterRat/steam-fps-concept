@@ -12,7 +12,8 @@ func _ready() -> void:
 		file = null
 	else:
 		file_error = file.open(filepath, File.WRITE)
-		if file_error != OK: error('Could not open log file.')
+		if file_error != OK:
+			error('Could not open log file.')
 	
 	debug('Game launched.')
 
@@ -35,14 +36,15 @@ func warn(string: String) -> void:
 
 
 func error(string: String) -> void:
-	var message: String = generate_message('ERROR', string)
+	var message: String = generate_message(' ERROR ', string)
 	push_error(string)
 	write_to_log(message)
 
 
 # Writes the given string to the log file.
 func write_to_log(string: String) -> void:
-	if file == null or file_error != OK: return
+	if file == null or file_error != OK:
+		return
 	file.store_string(string + '\n')
 
 

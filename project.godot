@@ -8,6 +8,46 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Node2D",
+"class": "Hitmarker",
+"language": "GDScript",
+"path": "res://scenes/gui/hud/hitmarker/hitmarker.gd"
+}, {
+"base": "Weapon",
+"class": "HitscanWeapon",
+"language": "GDScript",
+"path": "res://scenes/weapons/hitscan_weapon.gd"
+}, {
+"base": "Reference",
+"class": "Me",
+"language": "GDScript",
+"path": "res://test.gd"
+}, {
+"base": "KinematicBody",
+"class": "Mob",
+"language": "GDScript",
+"path": "res://scenes/mobs/mob.gd"
+}, {
+"base": "Reference",
+"class": "MobHitbox",
+"language": "GDScript",
+"path": "res://scenes/mobs/mob_hitbox.gd"
+}, {
+"base": "Spatial",
+"class": "Weapon",
+"language": "GDScript",
+"path": "res://scenes/weapons/weapon.gd"
+} ]
+_global_script_class_icons={
+"Hitmarker": "",
+"HitscanWeapon": "",
+"Me": "",
+"Mob": "",
+"MobHitbox": "",
+"Weapon": ""
+}
+
 [application]
 
 config/name="Duel"
@@ -23,7 +63,9 @@ Settings="*res://singletons/settings.gd"
 
 [debug]
 
+gdscript/warnings/unused_signal=false
 gdscript/warnings/return_value_discarded=false
+gdscript/warnings/standalone_ternary=false
 
 [display]
 
@@ -82,7 +124,7 @@ delete={
 , Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777220,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
  ]
 }
-shoot={
+attack={
 "deadzone": 0.5,
 "events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":1,"pressed":false,"doubleclick":false,"script":null)
  ]
@@ -105,6 +147,11 @@ next_weapon={
 previous_weapon={
 "deadzone": 0.5,
 "events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":5,"pressed":false,"doubleclick":false,"script":null)
+ ]
+}
+crouch={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777238,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
  ]
 }
 

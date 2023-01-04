@@ -13,7 +13,7 @@ export(bool) var _box_enabled = true
 onready var _label: Label = $"%Setting"
 onready var _slider: HSlider = $"%Slider"
 onready var _spin_box: SpinBox = $"%Box"
-onready var _value: float
+var _value: float
 
 
 func _ready() -> void:

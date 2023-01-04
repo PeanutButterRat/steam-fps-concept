@@ -1,29 +1,16 @@
 [gd_scene load_steps=7 format=2]
 
-[ext_resource path="res://rifle.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scenes/weapons/revolver/revolver.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/gui/hud/hud.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/player_local/player_local.gd" type="Script" id=3]
+[ext_resource path="res://scenes/gui/killfeed/killfeed.tscn" type="PackedScene" id=4]
 
 [sub_resource type="CapsuleShape" id=6]
 
 [sub_resource type="CapsuleMesh" id=2]
 
-[sub_resource type="Animation" id=8]
-resource_name = "hitmarker"
-tracks/0/type = "value"
-tracks/0/path = NodePath("Hitmarker:modulate")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/keys = {
-"times": PoolRealArray( 0, 1 ),
-"transitions": PoolRealArray( 1, 1 ),
-"update": 0,
-"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
-}
-
 [node name="Player" type="KinematicBody"]
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0 )
 collision_layer = 2
 collision_mask = 5
 script = ExtResource( 3 )
@@ -40,22 +27,15 @@ mesh = SubResource( 2 )
 unique_name_in_owner = true
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0 )
 
-[node name="Rifle" parent="Camera" instance=ExtResource( 1 )]
+[node name="Revolver" parent="Camera" instance=ExtResource( 1 )]
 unique_name_in_owner = true
-transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.370093, -1.19738 )
-
-[node name="RayCast" type="RayCast" parent="Camera"]
-unique_name_in_owner = true
-enabled = true
-cast_to = Vector3( 0, 0, -500 )
-collision_mask = 5
-collide_with_areas = true
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0.47044, -0.259324, -0.788015 )
 
 [node name="DebugHUD" type="Panel" parent="."]
-anchor_right = 0.255
-anchor_bottom = 0.115
-margin_right = -0.600037
-margin_bottom = -0.200005
+anchor_right = 0.262
+anchor_bottom = 0.197
+margin_right = 0.959961
+margin_bottom = 0.23999
 
 [node name="MarginContainer" type="MarginContainer" parent="DebugHUD"]
 anchor_right = 1.0
@@ -68,18 +48,18 @@ custom_constants/margin_bottom = 5
 [node name="VerticalContainer" type="VBoxContainer" parent="DebugHUD/MarginContainer"]
 margin_left = 5.0
 margin_top = 5.0
-margin_right = 483.0
-margin_bottom = 119.0
+margin_right = 498.0
+margin_bottom = 207.0
 
 [node name="Position" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_right = 478.0
-margin_bottom = 35.0
+margin_right = 493.0
+margin_bottom = 37.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Position"]
-margin_right = 237.0
-margin_bottom = 35.0
+margin_right = 244.0
+margin_bottom = 37.0
 size_flags_horizontal = 3
 size_flags_vertical = 5
 text = "Position:"
@@ -88,24 +68,24 @@ valign = 1
 
 [node name="Position" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Position"]
 unique_name_in_owner = true
-margin_left = 241.0
-margin_right = 478.0
-margin_bottom = 35.0
+margin_left = 248.0
+margin_right = 493.0
+margin_bottom = 37.0
 size_flags_horizontal = 3
 size_flags_vertical = 5
 align = 1
 valign = 1
 
 [node name="Health" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_top = 39.0
-margin_right = 478.0
-margin_bottom = 74.0
+margin_top = 41.0
+margin_right = 493.0
+margin_bottom = 78.0
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Health"]
-margin_left = 95.0
-margin_right = 141.0
-margin_bottom = 35.0
+margin_left = 99.0
+margin_right = 145.0
+margin_bottom = 37.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 text = "Health:"
@@ -114,16 +94,15 @@ valign = 1
 
 [node name="ProgressBar" type="ProgressBar" parent="DebugHUD/MarginContainer/VerticalContainer/Health"]
 unique_name_in_owner = true
-margin_left = 241.0
-margin_top = 10.0
-margin_right = 478.0
-margin_bottom = 24.0
+margin_left = 248.0
+margin_top = 11.0
+margin_right = 493.0
+margin_bottom = 25.0
 size_flags_horizontal = 3
 size_flags_vertical = 4
 rounded = true
 
 [node name="Ammo" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-unique_name_in_owner = true
 visible = false
 margin_top = 59.0
 margin_right = 478.0
@@ -151,36 +130,88 @@ text = "0 / 0"
 align = 1
 valign = 1
 
-[node name="Raycast" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_top = 78.0
-margin_right = 478.0
-margin_bottom = 114.0
+[node name="State" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
+margin_top = 82.0
+margin_right = 493.0
+margin_bottom = 119.0
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Raycast"]
-margin_left = 84.0
-margin_right = 153.0
-margin_bottom = 36.0
+[node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/State"]
+margin_left = 72.0
+margin_right = 172.0
+margin_bottom = 37.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
-text = "Looking at:"
+text = "Able to wallrun:"
 align = 1
 valign = 1
 
-[node name="RaycastLabel" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Raycast"]
+[node name="StateLabel" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/State"]
 unique_name_in_owner = true
-margin_left = 359.0
-margin_right = 359.0
-margin_bottom = 36.0
+margin_left = 370.0
+margin_right = 370.0
+margin_bottom = 37.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 align = 1
 valign = 1
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="Velocity" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
+margin_top = 123.0
+margin_right = 493.0
+margin_bottom = 160.0
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Velocity"]
+margin_left = 94.0
+margin_right = 149.0
+margin_bottom = 37.0
+size_flags_horizontal = 6
+size_flags_vertical = 5
+text = "Velocity:"
+align = 1
+valign = 1
+
+[node name="VelocityLabel" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Velocity"]
 unique_name_in_owner = true
-root_node = NodePath("")
-anims/hitmarker = SubResource( 8 )
+margin_left = 370.0
+margin_right = 370.0
+margin_bottom = 37.0
+size_flags_horizontal = 6
+size_flags_vertical = 5
+align = 1
+valign = 1
+
+[node name="Input" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
+margin_top = 164.0
+margin_right = 493.0
+margin_bottom = 202.0
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Input"]
+margin_left = 103.0
+margin_right = 141.0
+margin_bottom = 38.0
+size_flags_horizontal = 6
+size_flags_vertical = 5
+text = "Input:"
+align = 1
+valign = 1
+
+[node name="InputLabel" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Input"]
+unique_name_in_owner = true
+margin_left = 370.0
+margin_right = 370.0
+margin_bottom = 38.0
+size_flags_horizontal = 6
+size_flags_vertical = 5
+align = 1
+valign = 1
+
+[node name="DebugTimer" type="Timer" parent="DebugHUD"]
+unique_name_in_owner = true
+wait_time = 0.05
+autostart = true
 
 [node name="HUDLayer" type="CanvasLayer" parent="."]
 process_priority = 1
@@ -188,5 +219,14 @@ process_priority = 1
 [node name="HUD" parent="HUDLayer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 
-[connection signal="ammo_count_changed" from="Camera/Rifle" to="." method="_on_Rifle_ammo_count_changed"]
-[connection signal="fired_weapon" from="Camera/Rifle" to="." method="_on_Rifle_fired_weapon"]
+[node name="Killfeed" parent="HUDLayer" instance=ExtResource( 4 )]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -403.0
+margin_right = 0.0
+margin_bottom = 189.0
+
+[node name="Weapons" type="Spatial" parent="."]
+unique_name_in_owner = true
+
+[connection signal="timeout" from="DebugHUD/DebugTimer" to="." method="_on_DebugTimer_timeout"]

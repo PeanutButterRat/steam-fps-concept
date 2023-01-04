@@ -57,7 +57,7 @@ func _on_Global_recieved_lobby_list(lobbies: Array) -> void:
 		if lobby_name and lobby_mode:
 			var button: Button = Button.new()
 			button.text = '%s: %s (%d)' % [lobby_name, lobby_mode, members]
-			button.connect("pressed", Global, "_join_Lobby", [lobby])
+			button.connect("pressed", Global, "join_lobby", [lobby])
 		
 			lobby_list.add_child(button)
 
@@ -67,4 +67,4 @@ func _on_Start_pressed() -> void:
 	if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID:
 		return  # Must be host.
 	
-	Global.emit_event(Global.Events.GAME_STARTED, [], Global.Recipient.ALL_MEMBERS)
+	Global.send_signal(Global.SignalConstants.GAME_STARTED, [], Global.Recipient.ALL_MEMBERS)

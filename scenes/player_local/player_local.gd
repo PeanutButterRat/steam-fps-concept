@@ -1,98 +1,185 @@
 extends KinematicBody
 
-
 signal died
+signal state_changed(state)
 
 onready var camera: Camera = $'%Camera'
-onready var raycast_label: Label = $'%RaycastLabel'
 onready var healthbar: ProgressBar = $'%ProgressBar'
-onready var current_weapon: Spatial = $'%Rifle'
-onready var raycast: RayCast = $'%RayCast'
-onready var ammo_label: Label = $'%AmmoCount'
-onready var position_label: Label = $'%Position'
-onready var animations: AnimationPlayer = $'%AnimationPlayer'
 onready var hud: Control = $"%HUD"
+onready var current_weapon: Weapon = $'%Revolver'
 
 const ACCELERATION_DEFAULT: = 10
 const ACCELERATION_AIR_ACTIVE: = 5
 const ACCELERATION_AIR_IDLE: = 1
 const SLIDE_TIME: float = 0.2
-const MAX_HEALTH: float = 100.0
+const WALL_COLLISION_INDEX: int = 0
 
+enum State {
+	IDLE,
+	SPRINTING,
+	WALKING,
+	SLIDING,
+	WALLRUNNING,
+	CROUCHED,
+	FALLING,
+	JUMPING,
+	WALLRUN_JUMPING,
+}
+
+var max_health: float = 100.0
+var health: float = max_health
+
+var crouchwalk_speed: float = 5.0
+var walk_speed: float = 10.0
+var sprint_speed: float = 20.0
+var wallrun_speed: float = 15.0
+
+var speed: float = 10
 var acceleration: = ACCELERATION_DEFAULT
+var previous_state: int = State.IDLE
+
 var mouse_sensitivity: float = 0.1
-var movement_speed: = 10
-var walk_speed: = 10
-var run_speed: = 20
-var movement_acceleration: = 5
+var movement_acceleration: float = 5
 var wallrun_rotation: float = 5
 var slide_timer: float = SLIDE_TIME
 var slide_force: float = 100
 
-var input: Vector3
 var velocity: Vector3
 var snap: Vector3
 
-var gravity_force := 30
 var jump_force := 10
-var sprinting: bool = false
+var able_to_wallrun: bool = false
+var horizontal_walljump_force: float = 10.0
+var vertical_walljump_force: float = jump_force
+
+var wallrun_speed_threshold: float = 8.0
+var gravity_force := 30
 var vector: Vector3 = Vector3.ZERO
+var input: Vector3
 
-var health: float = MAX_HEALTH setget set_health
+var weapons: Array = []
 
+onready var debug_timer: Timer = $"%DebugTimer"
+
+var time_to_wallrun: float = 0.5
+var wallrun_timer: float = time_to_wallrun
+
+var sprinting: bool = false
+var wallrunning: bool = false
 
 func _ready() -> void:
+	current_weapon.connect('ammo_changed', self, '_on_Weapon_ammo_changed')
+	current_weapon.connect('damaged_mob', self, '_on_Weapon_damaged_mob')
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	Global.connect('event_occurred', self, '_on_Global_event_occurred')
 	healthbar.value = health
 
 
 func _physics_process(delta: float) -> void:
 	var horiziontal_rotation = global_transform.basis.get_euler().y  # Direction the player is looking in.
-	
 	input = Vector3(
 			Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 			0,  # No vertical motion calculated here.
 			Input.get_action_strength("move_backward") - Input.get_action_strength("move_forward")
-	).rotated(Vector3.UP, horiziontal_rotation).normalized()  # Global vector representing the horizontal input.
+	).rotated(Vector3.UP, horiziontal_rotation).normalized()  # Vector representing the horizontal input.
 	
-	sprinting = Input.is_action_pressed("sprint") and Input.get_action_strength("move_forward") > 0
-	movement_speed = run_speed if sprinting else walk_speed  # Sprinting (player must be moving forward).
+	var intended_motion: Vector3  # Horizontal velocity vector.
+	var state: int = _get_player_state(delta)
 	
-	if is_on_floor():
-		velocity.y = 0
-		snap = -get_floor_normal() * 5
-		acceleration = ACCELERATION_DEFAULT
-		
-		if Input.is_action_just_pressed("jump") and not Console.focused:
+	match state:
+		State.IDLE:
+			intended_motion = input * crouchwalk_speed
+			snap = Vector3.DOWN
+		State.CROUCHED:
+			intended_motion = input * crouchwalk_speed
+			snap = Vector3.DOWN
+		State.SLIDING:
+			intended_motion = input * crouchwalk_speed
+			snap = Vector3.DOWN
+		State.WALKING:
+			intended_motion = input * walk_speed
+			snap = Vector3.DOWN
+		State.SPRINTING:
+			intended_motion = input * sprint_speed
+			snap = Vector3.DOWN
+		State.JUMPING:
+			intended_motion = input * sprint_speed
+			velocity.y = jump_force
 			snap = Vector3.ZERO
-			velocity.y =  jump_force
-		
-	else:  # Player is in the air: normal gravity simulation.
-		snap = Vector3.DOWN
-		velocity.y -= gravity_force * delta
-		acceleration = ACCELERATION_AIR_ACTIVE if input else ACCELERATION_AIR_IDLE
+		State.FALLING:
+			intended_motion = input * velocity.length()
+			velocity.y -= gravity_force * delta
+			intended_motion.y = velocity.y
+			snap = Vector3.DOWN
+		State.WALLRUNNING:
+			var wall_normal: Vector3 = get_slide_collision(WALL_COLLISION_INDEX).normal
+			snap = -wall_normal
+			velocity.y = 0
+			
+			var orthogonal_direction: Vector3 = wall_normal.cross(Vector3.UP)
+			if orthogonal_direction.angle_to(velocity) > 90:
+				orthogonal_direction = -orthogonal_direction
+			
+			velocity = velocity.project(orthogonal_direction).normalized() * wallrun_speed
+			velocity += -wall_normal
+			intended_motion = velocity
+			
+		State.WALLRUN_JUMPING:
+			var wall_normal: Vector3 = get_slide_collision(WALL_COLLISION_INDEX).normal
+			snap = -wall_normal
+			velocity += wall_normal.normalized() * horizontal_walljump_force
+			velocity.y = vertical_walljump_force
+			intended_motion = velocity
+	
+	velocity = velocity.linear_interpolate(intended_motion, acceleration * delta)
+	velocity = move_and_slide_with_snap(velocity, snap, Vector3.UP)
+	
+	if state != previous_state:
+		emit_signal('state_changed', state)
+	previous_state = state
+	
+	var data: Array = [transform]
+	Global.send_signal(Global.SignalConstants.PLAYER_MOVED, data, Global.Recipient.ALL_MINUS_CLIENT)
+
+
+
+func _get_player_state(delta: float) -> int:
+	var sprinting: bool = Input.is_action_pressed('sprint') and Input.get_action_strength('move_forward') == 1
+	var jumped: bool = Input.is_action_just_pressed('jump')
+	var crouching: bool = Input.is_action_just_pressed('crouch')
 	
 	if Console.focused:
 		input = Vector3.ZERO
+		sprinting = false
+		jumped = false
+		crouching = false
 	
-	var movement: Vector3 = input * movement_speed  # Horizontal velocity vector.
-	movement.y = velocity.y  # Match the y velocity components so that when the velocity is interpolated, gravity is unaffected.
+	if is_on_floor():
+		wallrun_timer = time_to_wallrun
+		
+	if is_on_floor() and crouching:
+		return State.CROUCHED
+	elif is_on_floor() and sprinting:
+		return State.JUMPING if jumped else State.SPRINTING
+	elif is_on_floor() and input:
+		return State.JUMPING if jumped else State.WALKING
+	elif is_on_floor():
+		return State.JUMPING if jumped else State.IDLE
 	
-	if vector:
-		snap = Vector3.ZERO
-		velocity += vector
-		vector = Vector3.ZERO
-	
-	velocity = velocity.linear_interpolate(movement, acceleration * delta)  # Apply acceleration
-	velocity = move_and_slide_with_snap(velocity, snap, Vector3.UP, true, 5, 1, true)
-	
-	
-	position_label.text = str(translation)
-	raycast_label.text = raycast.get_collider().name if raycast.is_colliding() else 'Nothing'
-	
-	var data: Array = [transform]
-	Global.emit_event(Global.Events.PLAYER_MOVED, data, Global.Recipient.ALL_MINUS_CLIENT)
+	wallrun_timer -= delta
+	if wallrun_timer <= 0 and is_on_wall() and velocity.length() > wallrun_speed_threshold:
+		return State.WALLRUN_JUMPING if jumped else State.WALLRUNNING
+	else:
+		return State.FALLING
+
+
+func damage(amount: float) -> void:
+	health -= amount
+	healthbar.value = health
+
+
+func _on_Self_state_changed(state: int) -> void:
+	var data: Array = [state]
+	Global.send_signal(Global.SignalConstants.PLAYER_STATE_CHANGED, data, Global.Recipient.ALL_MINUS_CLIENT)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -100,63 +187,56 @@ func _unhandled_input(event: InputEvent) -> void:
 		self.rotate_y(deg2rad(-event.relative.x * mouse_sensitivity))  # Horizontal rotation.
 		camera.rotate_x(deg2rad(-event.relative.y * mouse_sensitivity))  # Vertical rotation.
 		camera.rotation.x = clamp(camera.rotation.x, deg2rad(-89), deg2rad(89))
-	elif event.is_action_pressed('shoot'):
-		current_weapon.shoot()
-	elif event.is_action_pressed('reload'):
-		current_weapon.reload()
 
 
-func _on_Rifle_fired_weapon(weapon) -> void:
-	Global.emit_event(Global.Events.WEAPON_FIRED, [Global.STEAM_ID], Global.Recipient.ALL_MINUS_CLIENT)
-	
-	if raycast.is_colliding() and raycast.get_collider() is Node:
-		var collider: Node = raycast.get_collider()
-		var data: Array
-		var recipient: int
-		var root: Node = collider.owner
-		
-		print(collider, ' ', root)
-		
-		if collider.has_method('damage'):
-			var killed: bool = collider.damage()
-			
-			if killed:
-				hud.kill_hitmarker()
-			elif collider.is_in_group('CriticalHitbox'):
-				hud.critical_hitmarker()
-			else:
-				hud.normal_hitmarker()
-
-
-func _on_Rifle_ammo_count_changed() -> void:
-	hud.update_ammo_count(current_weapon.ammo_count, current_weapon.mag_capacity)
-
-
-func damage(damage: float) -> bool:
-	set_health(health - damage)
-	if health <= 0:
-		kill()
-		return true
-	
-	return false
-
-
-func kill() -> void:
-	set_health(MAX_HEALTH)
-	emit_signal('died')
-
-
-func _on_Global_event_occurred(event: int, packet: Dictionary) -> void:
-	if event == Global.Events.PLAYER_DAMAGED:
-		var amount: float = packet[Global.EVENT_DATA][0]
+func _on_Global_player_damaged(data: Array, _sender: int) -> void:
+	var id: int = data[0]
+	if id == Global.STEAM_ID:
+		var amount: float = data[1]
 		damage(amount)
-	elif event == Global.Events.PLAYER_TELEPORTED:
-		var position: Vector3 = packet[Global.EVENT_DATA][0]
+
+
+func _on_Global_player_teleported(data: Array, _sender: int) -> void:
+	var id: int = data[0]
+	if id == Global.STEAM_ID:
+		var position: Vector3 = data[1]
 		translation = position
-	elif event == Global.Events.PLAYER_OP:
+
+
+func _on_Global_player_console_enabled(data: Array, _sender: int) -> void:
+	var id: int = data[0]
+	if id != Global.STEAM_ID:  # Do not de-op oneself.
 		Console.enabled = not Console.enabled
 
 
-func set_health(amount: float) -> void:
-	health = amount
-	healthbar.value = amount
+func _on_Weapon_damaged_mob(part: MobHitbox) -> void:
+	var mob: Mob = Mob.get_mob_from_part(part)
+	
+	if mob != null:
+		var hitmarker_name: String = Hitmarker.NORMAL_ANIMATION_NAME
+		if mob.is_dead():
+			hitmarker_name = Hitmarker.KILL_ANIMATION_NAME
+			mob.kill()
+		elif part.is_critical():
+			hitmarker_name = Hitmarker.CRITICAL_ANIMATION_NAME
+		
+		hud.play_hitmarker(hitmarker_name)
+
+
+func _on_Weapon_ammo_changed(current_ammo: int, magazine_capacity: int, reserve_capacity: int) -> void:
+	hud.set_ammo_count(current_ammo, magazine_capacity, reserve_capacity)
+
+
+func add_weapon(weapon: Weapon) -> void:
+	weapons.append(weapon)
+
+
+func remove_weapon(weapon: Weapon) -> void:
+	weapons.erase(weapon)
+
+
+func _on_DebugTimer_timeout():
+	$"%Position".text = str(translation)
+	$"%InputLabel".text = str(input)
+	$"%VelocityLabel".text = str(velocity.length())
+	$"%StateLabel".text = str(State.keys()[previous_state])

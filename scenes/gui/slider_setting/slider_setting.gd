@@ -11,9 +11,9 @@ export(float) onready var _box_step = 0.1
 onready var _label: Label = $"%Setting"
 onready var _slider: HSlider = $"%Slider"
 onready var _spin_box: SpinBox = $"%Box"
-onready var _value: float
 
-onready var settings: ConfigFile = Global.get("settings")
+var _value: float
+var settings: ConfigFile = Global.get("settings")
 
 
 func _ready() -> void:

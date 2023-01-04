@@ -1,0 +1,55 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://assets/addons/kenney_prototype_textures/light/texture_04.png" type="Texture" id=1]
+[ext_resource path="res://scenes/player_local/player_local.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scenes/mobs/world/world.gd" type="Script" id=3]
+[ext_resource path="res://scenes/mobs/player_online/player_online.tscn" type="PackedScene" id=4]
+[ext_resource path="res://scenes/mobs/timmy/timmy.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scenes/terminal/terminal.tscn" type="PackedScene" id=6]
+
+[sub_resource type="BoxShape" id=1]
+
+[sub_resource type="CubeMesh" id=2]
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_texture = ExtResource( 1 )
+uv1_scale = Vector3( 18, 12, 1 )
+
+[node name="World" type="Spatial"]
+script = ExtResource( 3 )
+OnlinePlayerScene = ExtResource( 4 )
+TimmyScene = ExtResource( 5 )
+
+[node name="Floor" type="StaticBody" parent="."]
+unique_name_in_owner = true
+transform = Transform( 100, 0, 0, 0, 1, 0, 0, 0, 100, 0, 0, 0 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Floor"]
+shape = SubResource( 1 )
+
+[node name="CSGMesh" type="CSGMesh" parent="Floor"]
+mesh = SubResource( 2 )
+material = SubResource( 3 )
+
+[node name="Wall" type="StaticBody" parent="."]
+unique_name_in_owner = true
+transform = Transform( -6.97634e-07, -0.1596, 0, 6.91648, -3.02329e-09, 0, 0, 0, 25.9807, 11.6181, 0, 0 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Wall"]
+shape = SubResource( 1 )
+
+[node name="CSGMesh" type="CSGMesh" parent="Wall"]
+mesh = SubResource( 2 )
+material = SubResource( 3 )
+
+[node name="LocalPlayer" parent="." instance=ExtResource( 2 )]
+unique_name_in_owner = true
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.69174, 0 )
+
+[node name="Spawn" type="Spatial" parent="."]
+unique_name_in_owner = true
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.13246, -4.73626 )
+
+[node name="ConsoleLayer" type="CanvasLayer" parent="."]
+
+[node name="Console" parent="ConsoleLayer" instance=ExtResource( 6 )]

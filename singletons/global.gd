@@ -6,10 +6,24 @@ signal player_list_changed(players)
 signal lobby_created(lobby_id)
 signal recieved_lobby_list(lobbies)
 signal chat_event_occured(event)
-signal event_occurred(event, packet)
+
+signal game_started(data, sender)
+signal player_moved(data, sender)
+signal player_damaged(data, sender)
+signal player_died(data, sender)
+signal timmy_spawned(data, sender)
+signal shot_environment(data, sender)
+signal timmy_damaged(data, sender)
+signal timmy_died(data, sender)
+signal weapon_fired(data, sender)
+signal weapon_reloaded(data, sender)
+signal weapon_swapped(data, sender)
+signal player_teleported(data, sender)
+signal player_opped(data, sender)
+signal player_state_changed(data, sender)
 
 
-enum Events {
+enum SignalConstants {
 	NONE,
 	GAME_STARTED,
 	PLAYER_MOVED,
@@ -27,13 +41,15 @@ enum Events {
 	CROUCHED,
 	UNCROUCHED,
 	PLAYER_TELEPORTED,
-	PLAYER_OP
+	PLAYER_CONSOLE_ENABLED
+	PLAYER_STATE_CHANGED
 }
+
 
 enum Recipient {
 	ALL_MEMBERS = -2, 
 	ALL_MINUS_CLIENT = -1,
-	HOST = 0
+	HOST = 0,
 }
 
 enum LobbyVisibility {
@@ -43,16 +59,8 @@ enum LobbyVisibility {
 	INVISIBLE
 }
 
-
-const GROUPS: Dictionary = {
-	'Timmy': 'Timmy',
-	'OnlinePlayers': 'OnlinePlayers',
-	'World': 'World',
-	'CriticalHitbox': 'CriticalHitbox'
-}
-
-const EVENT_OCCURRED: String = 'event'
-const EVENT_DATA: String = 'data'
+const SIGNAL_RECIEVED_KEY: String = 'signal'
+const SIGNAL_DATA_KEY: String = 'data'
 const PACKET_SENDER_KEY: String = 'sender'
 
 # Steam variables.
@@ -74,7 +82,6 @@ var unique_id_counter: int = 1000 setget set_unique_id_counter
 
 func _ready() -> void:
 	_initialize_Steam()
-	
 	Steam.connect('lobby_created', self, '_on_Lobby_Created')
 	Steam.connect('lobby_match_list', self, '_on_Lobby_Match_List')
 	Steam.connect('lobby_joined', self, '_on_Lobby_Joined')
@@ -89,23 +96,31 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	Steam.run_callbacks()
-	if lobby_id > 0: _read_All_P2P_Packets()  # If the player is connected, read packets.
+	if lobby_id > 0:
+		_read_All_P2P_Packets()  # If the player is connected, read packets.
 
 
+# Only host should generate unique_ids.
 func generate_unique_id() -> int:
 	var id: int = unique_id_counter
 	unique_id_counter += 1
 	return id
 
 
-func set_unique_id_counter(_value: int) -> void:
-	pass
+func set_unique_id_counter(value: int) -> void:
+	Logging.warn('Setting unique_id_counter to a value.')
+	unique_id_counter = value
+
+
+func get_signal_string(value: int) -> String:
+	var string: String = SignalConstants.keys()[value]
+	return string.to_lower()
 
 
 func _initialize_Steam() -> void:
 	var INIT: Dictionary = Steam.steamInit()
 	Logging.debug('Did Steam initialize?: ' + str(INIT))
-
+	
 	if INIT['status'] != 1:
 		Logging.error('Failed to initialize Steam. ' + str(INIT['verbal']) + ' Shutting down...')
 		get_tree().quit()
@@ -162,7 +177,7 @@ func _read_P2P_Packet() -> void:
 	if PACKET_SIZE > 0: # There is a packet.
 		var PACKET: Dictionary = Steam.readP2PPacket(PACKET_SIZE, 0)
 		
-		if PACKET.empty() or PACKET == null:
+		if PACKET.empty():
 			Logging.warn('Read an empty packet with non-zero size.')
 		
 		var sender: int = PACKET['steam_id_remote']  # Steam ID.
@@ -171,9 +186,10 @@ func _read_P2P_Packet() -> void:
 		readable_packet[PACKET_SENDER_KEY] = sender
 		
 		# Deal with packet data.
-		var event: int = readable_packet.get(EVENT_OCCURRED, Events.NONE)
-		if event != Events.NONE:
-			emit_signal('event_occurred', event, readable_packet)
+		var signal_id: int = readable_packet.get(SIGNAL_RECIEVED_KEY, SignalConstants.NONE)
+		if signal_id != SignalConstants.NONE:
+			var signal_string: String = get_signal_string(signal_id)
+			emit_signal(signal_string, readable_packet[SIGNAL_DATA_KEY], sender)
 
 
 func _read_All_P2P_Packets(read_count: int = 0):
@@ -221,7 +237,7 @@ func _on_Lobby_Created(connect: int, lob_id: int) -> void:
 
 func _on_Lobby_Join_Requested(lob_id: int, friendID: int) -> void:
 	emit_signal('chat_message_recieved', 'Joining ' + Steam.getFriendPersonaName(friendID)+ "'s lobby...")
-	_join_Lobby(lob_id)
+	join_lobby(lob_id)
 
 
 func _on_Lobby_Match_List(lobbies: Array) -> void:
@@ -247,7 +263,7 @@ func _on_Persona_Change(steam_id: int, _flag: int) -> void:
 	emit_signal('player_list_changed', lobby_members)
 
 
-func _join_Lobby(lob_id: int) -> void:
+func join_lobby(lob_id: int) -> void:
 	emit_signal('chat_event_occured', 'Attempting to join lobby ' + str(lobby_id) + '...')
 	
 	# Clear any previous lobby members lists, if you were in a previous lobby.
@@ -274,7 +290,7 @@ func _on_Lobby_Joined(lob_id: int, _permissions: int, _locked: bool, response: i
 			2:	FAIL_REASON = 'This lobby no longer exists.'
 			3:	FAIL_REASON = "You don't have permission to join this lobby."
 			4:	FAIL_REASON = 'The lobby is now full.'
-			5:	FAIL_REASON = 'Uh... something unexpected happened!'
+			5:	FAIL_REASON = 'Something unexpected happened.'
 			6:	FAIL_REASON = 'You are banned from this lobby.'
 			7:	FAIL_REASON = 'You cannot join due to having a limited account.'
 			8:	FAIL_REASON = 'This lobby is locked or disabled.'
@@ -288,7 +304,7 @@ func _on_Lobby_Joined(lob_id: int, _permissions: int, _locked: bool, response: i
 
 
 func _on_Lobby_Data_Update(success: int, _lobby_id: int, _member_id: int):
-	Logging.debug('Lobby data updated: ' + 'true' if success else 'false')
+	Logging.debug('Lobby data updated: ' + 'succeses' if success else 'failed')
 
 
 func leave_Lobby() -> void:
@@ -323,10 +339,10 @@ func _on_Lobby_Chat_Update(_lobby_id: int, changed_id: int, making_change_id: in
 	Logging.debug('Lobby chat update: %d (changed_id), %d (making_change_id)' % [changed_id, making_change_id])
 
 
-func emit_event(event: int, data: Array, recipient: int) -> void:
+func send_signal(signal_id: int, data: Array, recipient: int) -> void:
 	var message: Dictionary = {
-		Global.EVENT_OCCURRED: event,
-		Global.EVENT_DATA: data
+		Global.SIGNAL_RECIEVED_KEY: signal_id,
+		Global.SIGNAL_DATA_KEY: data
 	}
 	
 	Global.send_P2P_Packet(recipient, message)

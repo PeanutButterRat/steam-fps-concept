@@ -1,21 +1,17 @@
 extends Control
 
 
-onready var hitmarker: Node2D = $"%Hitmarker"
+onready var hitmarker: Hitmarker = $"%Hitmarker"
 onready var ammo_label: Label = $"%AmmoCount"
 
 
-func update_ammo_count(current_ammo: int, mag_capacity: int) -> void:
-	ammo_label.text = '%d / %d' % [current_ammo, mag_capacity]
+func play_hitmarker(hitmarker_name: String) -> void:
+	hitmarker.play(hitmarker_name)
 
 
-func normal_hitmarker() -> void:
-	hitmarker.hit()
+func set_ammo_count(current_ammo: int, magazine_capacity: int, reserve_capacity: int) -> void:
+	ammo_label.text = str(current_ammo) + ' / ' + str(magazine_capacity) + ' R: ' + str(reserve_capacity)
 
 
-func critical_hitmarker() -> void:
-	hitmarker.crit()
-
-
-func kill_hitmarker() -> void:
-	hitmarker.kill()
+func set_ammo_icon() -> void:
+	pass

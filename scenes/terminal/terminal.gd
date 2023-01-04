@@ -25,7 +25,7 @@ func _input(event: InputEvent) -> void:
 		close()
 	elif event.is_action_pressed('ui_focus_next') and visible:  # Autocomplete last command.
 		_on_LineEdit_text_changed(last_command)
-	elif event.is_action_pressed('shoot') and visible:
+	elif event.is_action_pressed('attack') and visible:
 		get_tree().set_input_as_handled()
 
 

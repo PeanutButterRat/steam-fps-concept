@@ -4,7 +4,7 @@ extends HBoxContainer
 enum Type {KEYBOARD, CONTROLLER}
 export(Type) onready var _type
 
-onready var button_script: Script = load('res://scenes/gui/control_map/button_remap.gd')
+var button_script: Script = load('res://scenes/gui/control_map/button_remap.gd')
 const CONFIG_SECTION: String = 'controls'
 
 export var _action: String = 'default'
@@ -12,7 +12,7 @@ onready var _buttons: Array = []
 onready var _bindings: Array
 
 
-onready var _input_handlers: Dictionary = {
+var _input_handlers: Dictionary = {
 	Type.KEYBOARD: funcref(self, '_is_keyboard_input'),
 	Type.CONTROLLER: funcref(self, '_is_controller_input')
 }
