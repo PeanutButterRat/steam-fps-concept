@@ -63,7 +63,8 @@ func _on_Global_recieved_lobby_list(lobbies: Array) -> void:
 
 
 func _on_Start_pressed() -> void:
-	if Global.lobby_id == 0: return  # Must be in a lobby to start a game.
+	if Global.lobby_id == 0:
+		return  # Must be in a lobby to start a game.
 	if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID:
 		return  # Must be host.
 	
