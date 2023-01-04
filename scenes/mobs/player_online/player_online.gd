@@ -12,6 +12,8 @@ func _ready() -> void:
 	Global.connect('player_moved', self, '_on_Global_player_moved')
 	Global.connect('weapon_fired', self, '_on_Global_weapon_fired')
 	Global.connect('weapon_reloaded', self, '_on_Global_weapon_reloaded')
+	Global.connect('player_damaged', self, '_on_Global_player_damaged')
+	connect('damaged', self, '_on_Self_damaged')
 
 
 func set_nametag(string: String) -> void:
@@ -25,3 +27,12 @@ func _on_Global_player_moved(data: Array, sender: int) -> void:
 	if sender == steam_id:
 		var new_transform: Transform = data[0]
 		transform = new_transform
+
+
+func _on_Global_player_damaged(data: Array, sender: int) -> void:
+	health -= data[1]
+
+
+func _on_Self_damaged(_entity: Mob, amount: float) -> void:
+	var data: Array = [steam_id, amount]
+	Global.send_signal(Global.SignalConstants.PLAYER_DAMAGED, data, Global.Recipient.ALL_MINUS_CLIENT)

@@ -182,6 +182,7 @@ func damage(amount: float) -> void:
 		var data: Array = [Global.STEAM_ID, randi(), last_attacking_mob] # The random integer is for choosing a killstring for the killfeed.
 		Global.send_signal(Global.SignalConstants.PLAYER_DIED, data, Global.Recipient.ALL_MEMBERS)
 
+
 func _on_Self_state_changed(state: int) -> void:
 	var data: Array = [state]
 	Global.send_signal(Global.SignalConstants.PLAYER_STATE_CHANGED, data, Global.Recipient.ALL_MINUS_CLIENT)
