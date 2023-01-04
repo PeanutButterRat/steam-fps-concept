@@ -27,7 +27,7 @@ enum State {
 }
 
 var max_health: float = 100.0
-var health: float = max_health
+var health: float = max_health setget set_health
 
 var crouchwalk_speed: float = 5.0
 var walk_speed: float = 10.0
