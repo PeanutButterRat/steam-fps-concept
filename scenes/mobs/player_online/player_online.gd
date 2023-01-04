@@ -22,8 +22,8 @@ func set_nametag(string: String) -> void:
 
 
 func _on_Global_player_moved(data: Array, sender: int) -> void:
-	var new_transform: Transform = data[1]
 	if sender == steam_id:
+		var new_transform: Transform = data[0]
 		transform = new_transform
 
 

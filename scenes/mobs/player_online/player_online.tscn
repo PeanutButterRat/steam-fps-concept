@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://scenes/mobs/player_online/player_online.gd" type="Script" id=1]
+[ext_resource path="res://scenes/weapons/revolver/revolver.tscn" type="PackedScene" id=2]
 
 [sub_resource type="CapsuleShape" id=6]
 
@@ -25,3 +26,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.73929, 0 )
 pixel_size = 0.02
 billboard = 1
 text = "Player"
+
+[node name="Revolver" parent="." instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.3, 0.5 )
