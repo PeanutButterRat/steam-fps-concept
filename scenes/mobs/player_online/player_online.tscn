@@ -28,4 +28,4 @@ billboard = 1
 text = "Player"
 
 [node name="revolver" parent="." instance=ExtResource( 2 )]
-transform = Transform( -6.26477e-09, 0, -0.143321, 0, 0.143321, 0, 0.143321, 0, -6.26477e-09, 1.18481, 0.400786, 0.434134 )
+transform = Transform( 0.143321, 0, -5.09179e-16, 0, 0.143321, 0, 5.09179e-16, 0, 0.143321, 0.349378, 0.400786, -0.974304 )
