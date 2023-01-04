@@ -175,9 +175,14 @@ func _get_player_state(delta: float) -> int:
 		return State.FALLING
 
 
-func damage(amount: float) -> void:
+
+func set_health(amount: float) -> void:
 	health -= amount
 	healthbar.value = health
+
+
+func damage(amount: float) -> void:
+	set_health(health - amount)
 	if health <= 0:
 		var data: Array = [Global.STEAM_ID, randi(), last_attacking_mob] # The random integer is for choosing a killstring for the killfeed.
 		Global.send_signal(Global.SignalConstants.PLAYER_DIED, data, Global.Recipient.ALL_MEMBERS)

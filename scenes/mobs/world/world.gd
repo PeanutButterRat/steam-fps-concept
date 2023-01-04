@@ -70,8 +70,10 @@ func _on_Global_player_died(data: Array, _sender: int) -> void:
 	var player = data[0]
 	if player in online_players:
 		online_players[player].translation = spawn.translation
+		online_players[player].health = online_players[player].max_health
 	elif player == Global.STEAM_ID:
 		local_player.translation = spawn.translation
+		local_player.set_health
 
 
 func _on_Global_timmy_died(data: Array, _sender: int) -> void:
