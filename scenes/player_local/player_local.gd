@@ -241,4 +241,4 @@ func _on_DebugTimer_timeout():
 	$"%Position".text = str(translation)
 	$"%VelocityLabel".text = str(velocity.length())
 	$"%StateLabel".text = str(State.keys()[previous_state])
-	$'%Raycast'.text = current_weapon._raycast.get_collider()
+	$'%Raycast'.text = current_weapon._raycast.get_collider().name if current_weapon._raycast.get_collider() else 'Nothing'

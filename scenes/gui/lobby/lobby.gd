@@ -55,7 +55,7 @@ func _on_Global_recieved_lobby_list(lobbies: Array) -> void:
 		
 		if lobby_name and lobby_mode:
 			var button: Button = Button.new()
-			button.text = '%s: %s (%d)' % [lobby_name, members]
+			button.text = '%s: %s (%d)' % [lobby_name, lobby_mode, members]
 			button.connect("pressed", Global, "join_lobby", [lobby])
 		
 			lobby_list.add_child(button)
