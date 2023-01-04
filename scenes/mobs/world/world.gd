@@ -70,11 +70,12 @@ func _on_Global_player_died(data: Array, _sender: int) -> void:
 	var player = data[0]
 	if player in online_players:
 		online_players[player].translation = spawn.translation
+	elif player == Global.STEAM_ID:
+		local_player.translation = spawn.translation
 
 
 func _on_Global_timmy_died(data: Array, _sender: int) -> void:
 	var id: int = data[0]
-	var killstring_id: int = data[1]
 	
 	for index in len(entities):
 		var entity: Node = entities[index]
@@ -99,7 +100,6 @@ func _on_Command_teleport_player(args: Array) -> String:
 	if len(args) != 1:
 		return Console.COMMAND_COUNT_ERROR
 	
-	var success: bool = false
 	var player_name: String = args[0]
 	
 	for key in online_players:
@@ -119,7 +119,6 @@ func _on_Command_op_player(args: Array) -> String:
 	if len(args) != 1:
 		return Console.COMMAND_COUNT_ERROR
 	
-	var success: bool = false
 	var player_name: String = args[0]
 
 	for key in online_players:

@@ -21,7 +21,7 @@ func _ready():
 
 
 func _on_Global_player_died(data: Array, sender: int) -> void:
-	var attacker: String = Steam.getFriendPersonaName(sender)
+	var attacker: String = data[2]
 	var victim: String = Steam.getFriendPersonaName(data[0])
 	var killstring_id: int = data[1] % len(KILLSTRINGS)
 	

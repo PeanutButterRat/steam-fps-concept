@@ -33,6 +33,7 @@ var crouchwalk_speed: float = 5.0
 var walk_speed: float = 10.0
 var sprint_speed: float = 20.0
 var wallrun_speed: float = 15.0
+var last_attacking_mob: String
 
 var speed: float = 10
 var acceleration: = ACCELERATION_DEFAULT
@@ -64,7 +65,6 @@ onready var debug_timer: Timer = $"%DebugTimer"
 var time_to_wallrun: float = 0.5
 var wallrun_timer: float = time_to_wallrun
 
-var sprinting: bool = false
 var wallrunning: bool = false
 
 func _ready() -> void:
@@ -72,6 +72,7 @@ func _ready() -> void:
 	current_weapon.connect('damaged_mob', self, '_on_Weapon_damaged_mob')
 	Global.connect('player_console_enabled', self, '_on_Global_player_console_enabled')
 	Global.connect('player_teleported', self, '_on_Global_player_teleported')
+	Global.connect('player_damaged', self, '_on_Global_player_damaged')
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	healthbar.value = health
 
@@ -177,7 +178,9 @@ func _get_player_state(delta: float) -> int:
 func damage(amount: float) -> void:
 	health -= amount
 	healthbar.value = health
-
+	if health <= 0:
+		var data: Array = [Global.STEAM_ID, randi(), last_attacking_mob] # The random integer is for choosing a killstring for the killfeed.
+		Global.send_signal(Global.SignalConstants.PLAYER_DIED, data, Global.Recipient.ALL_MEMBERS)
 
 func _on_Self_state_changed(state: int) -> void:
 	var data: Array = [state]
@@ -191,10 +194,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		camera.rotation.x = clamp(camera.rotation.x, deg2rad(-89), deg2rad(89))
 
 
-func _on_Global_player_damaged(data: Array, _sender: int) -> void:
+func _on_Global_player_damaged(data: Array, sender: int) -> void:
 	var id: int = data[0]
 	if id == Global.STEAM_ID:
 		var amount: float = data[1]
+		last_attacking_mob = Steam.getFriendPersonaName(sender)
 		damage(amount)
 
 
