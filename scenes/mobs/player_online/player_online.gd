@@ -15,7 +15,10 @@ func _ready() -> void:
 
 
 func set_nametag(string: String) -> void:
-	nametag.text = string
+	if nametag == null:
+		push_error('Attempted to set nametag for online player before it was ready.')
+	else:
+		nametag.text = string
 
 
 func _on_Global_player_moved(data: Array, sender: int) -> void:

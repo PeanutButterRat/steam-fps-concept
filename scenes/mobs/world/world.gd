@@ -45,10 +45,10 @@ func _update_players(players: Array) -> void:
 		if player != Global.STEAM_ID and not player in online_players:
 			var instance: Mob = OnlinePlayerScene.instance()
 			online_players[player] = instance
+			add_child(instance)
 			instance.translation = spawn.translation
 			instance.set_nametag(Steam.getFriendPersonaName(player))
 			instance.steam_id = player
-			add_child(instance)
 
 
 func _on_Command_spawn_timmy(_arguments: Array) -> String:
