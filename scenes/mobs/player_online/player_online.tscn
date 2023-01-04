@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://scenes/mobs/player_online/player_online.gd" type="Script" id=1]
-[ext_resource path="res://scenes/weapons/revolver/revolver.tscn" type="PackedScene" id=2]
+[ext_resource path="res://assets/models/revolver.gltf" type="PackedScene" id=2]
 
 [sub_resource type="CapsuleShape" id=6]
 
@@ -27,5 +27,5 @@ pixel_size = 0.02
 billboard = 1
 text = "Player"
 
-[node name="Revolver" parent="." instance=ExtResource( 2 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.3, 0.5 )
+[node name="revolver" parent="." instance=ExtResource( 2 )]
+transform = Transform( -6.26477e-09, 0, -0.143321, 0, 0.143321, 0, 0.143321, 0, -6.26477e-09, 1.18481, 0.400786, 0.434134 )

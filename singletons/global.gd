@@ -312,10 +312,10 @@ func leave_Lobby() -> void:
 		Steam.leaveLobby(lobby_id) # Send leave request to Steam
 		
 		# Close session with all users
-		for member in lobby_members:
-			if member != Global.STEAM_ID:
-				Logging.warn("Closing session with user: " + member['steam_name'])
-				Steam.closeP2PSessionWithUser(member['steam_id'])
+		for steam_id in lobby_members:
+			if steam_id != Global.STEAM_ID:
+				Logging.warn("Closing session with user: " + Steam.getFriendPersonaName(steam_id))
+				Steam.closeP2PSessionWithUser(steam_id)
 		
 		lobby_members.clear()
 		lobby_id = 0

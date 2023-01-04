@@ -21,22 +21,6 @@ func set_nametag(string: String) -> void:
 		nametag.text = string
 
 
-func _on_Global_player_moved(data: Array, sender: int) -> void:
-	if sender == steam_id:
-		var new_transform: Transform = data[0]
-		transform = new_transform
-
-
-func _on_Global_weapon_attacked(_data: Array, sender: int) -> void:
-	if sender == steam_id:
-		weapon.attack()
-
-
-func _on_Global_weapon_reloaded(_data: Array, sender: int) -> void:
-	if sender == steam_id:
-		weapon.reload()
-
-
 func kill() -> void:
 	var data: Array = [steam_id, randi()] # The random integer is for choosing a killstring for the killfeed.
 	Global.send_signal(Global.SignalConstants.PLAYER_DIED, data, Global.Recipient.ALL_MEMBERS)

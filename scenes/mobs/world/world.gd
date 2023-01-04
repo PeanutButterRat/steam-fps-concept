@@ -30,8 +30,7 @@ func _ready() -> void:
 	
 	local_player.connect('died', self, '_on_LocalPlayer_died')
 	_update_players(Global.lobby_members)
-	
-	_on_Global_timmy_spawned([Global.generate_unique_id(), spawn.translation], 0)
+
 
 func _update_players(players: Array) -> void:
 	# Check for players that left the game.
