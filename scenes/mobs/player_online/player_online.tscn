@@ -1,11 +1,15 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://scenes/mobs/player_online/player_online.gd" type="Script" id=1]
 [ext_resource path="res://assets/models/revolver.gltf" type="PackedScene" id=2]
+[ext_resource path="res://scenes/mobs/mob_hitbox.gd" type="Script" id=3]
 
 [sub_resource type="CapsuleShape" id=6]
 
 [sub_resource type="CapsuleMesh" id=2]
+
+[sub_resource type="CapsuleShape" id=7]
+height = 1.83623
 
 [node name="Player" type="KinematicBody"]
 collision_layer = 7
@@ -29,3 +33,10 @@ text = "Player"
 
 [node name="revolver" parent="." instance=ExtResource( 2 )]
 transform = Transform( 0.143321, 0, -5.09179e-16, 0, 0.143321, 0, 5.09179e-16, 0, 0.143321, 0.349378, 0.400786, -0.974304 )
+
+[node name="MobHitbox" type="Area" parent="."]
+script = ExtResource( 3 )
+
+[node name="CollisionShape" type="CollisionShape" parent="MobHitbox"]
+transform = Transform( 0.798509, 0, 0, 0, -3.4904e-08, 0.798509, 0, -0.798509, -3.4904e-08, 0, 0, 0 )
+shape = SubResource( 7 )

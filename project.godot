@@ -29,7 +29,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scenes/mobs/mob.gd"
 }, {
-"base": "Reference",
+"base": "Area",
 "class": "MobHitbox",
 "language": "GDScript",
 "path": "res://scenes/mobs/mob_hitbox.gd"
