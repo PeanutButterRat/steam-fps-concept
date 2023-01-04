@@ -39,3 +39,9 @@ func _on_Global_game_started(_data: Array, _sender: int):
 	
 	if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID:
 		Console.enabled = false
+
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed('quit'):
+		get_tree().quit()
+
