@@ -1,8 +1,8 @@
 class_name Mob extends KinematicBody
 
 
-signal damaged(entity, amount)
-signal healed(entity, amount)
+signal damaged(entity, amount, attacker)
+signal healed(entity)
 signal died(entity)
 
 const MOB_GROUP: String = 'Mobs'
@@ -31,9 +31,9 @@ func _ready() -> void:
 			parts.append(child)
 
 
-func damage(amount: float) -> void:
+func damage(amount: float, _attacker: String) -> void:
 	health -= amount
-	emit_signal('damaged', self)
+	emit_signal('damaged', self, amount, _attacker)
 
 
 func heal(amount: float) -> void:

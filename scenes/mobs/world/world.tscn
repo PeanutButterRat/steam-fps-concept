@@ -54,3 +54,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.69174, 0 )
 [node name="Spawn" type="Spatial" parent="."]
 unique_name_in_owner = true
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.13246, -4.73626 )
+
+[node name="Player" parent="Spawn" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18751, -6.81742 )

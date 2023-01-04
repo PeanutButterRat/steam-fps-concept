@@ -1,7 +1,7 @@
 class_name MobHitbox extends Area
 
 
-signal damaged(amount)
+signal damaged(amount, attacker)
 signal healed(amount)
 
 export var _damage_multiplier: float = 1.0
@@ -9,8 +9,8 @@ export var _heal_multiplier: float = 1.0
 
 
 
-func damage(amount: float) -> void:
-	emit_signal('damaged', amount * _damage_multiplier)
+func damage(amount: float, attacker: String) -> void:
+	emit_signal('damaged', amount * _damage_multiplier, attacker)
 
 
 func heal(amount: float) -> void:

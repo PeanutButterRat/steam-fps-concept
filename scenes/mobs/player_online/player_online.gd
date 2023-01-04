@@ -33,6 +33,6 @@ func _on_Global_player_damaged(data: Array, sender: int) -> void:
 	health -= data[1]
 
 
-func _on_Self_damaged(_entity: Mob, amount: float) -> void:
+func _on_Self_damaged(_entity: Mob, amount: float, attacker: String) -> void:
 	var data: Array = [steam_id, amount]
 	Global.send_signal(Global.SignalConstants.PLAYER_DAMAGED, data, Global.Recipient.ALL_MINUS_CLIENT)
