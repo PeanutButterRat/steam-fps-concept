@@ -96,31 +96,44 @@ func _on_Command_clear_entities(args: Array) -> String:
 
 
 func _on_Command_teleport_player(args: Array) -> String:
-	if len(args) < 0:
+	if len(args) != 1:
 		return Console.COMMAND_COUNT_ERROR
 	
-	for player_name in args:
-		for key in online_players:
-			var steam_name: String = Steam.getFriendPersonaName(key)
-			if steam_name == player_name:
-				var data: Array = [local_player.translation]
-				Global.send_signal(Global.SignalConstants.PLAYER_TELEPORTED, data, key)
+	var success: bool = false
+	var player_name: String = args[0]
 	
-	return Console.COMMAND_SUCCESS
+	for key in online_players:
+		var steam_name: String = Steam.getFriendPersonaName(key)
+		if player_name == steam_name:
+			var data: Array = [local_player.translation]
+			Global.send_signal(Global.SignalConstants.PLAYER_TELEPORTED, data, key)
+			return Console.COMMAND_SUCCESS
+	
+	if player_name == Global.STEAM_USERNAME:
+		return 'You cannot teleport yourself.'
+	
+	return "No player found with the name of '%s.'" % player_name
 
 
 func _on_Command_op_player(args: Array) -> String:
-	if len(args) < 0:
+	if len(args) != 1:
 		return Console.COMMAND_COUNT_ERROR
 	
-	for player_name in args:
-		for key in online_players:
-			var steam_name: String = Steam.getFriendPersonaName(key)
-			if steam_name == player_name and key != Global.STEAM_ID:
-				var data: Array = [local_player.translation]
-				Global.send_signal(Global.SignalConstants.PLAYER_OP, data, key)
+	var success: bool = false
+	var player_name: String = args[0]
+
+	for key in online_players:
+		var steam_name: String = Steam.getFriendPersonaName(key)
+		if player_name == steam_name and key != Global.STEAM_ID:
+			var data: Array = [local_player.translation]
+			Global.send_signal(Global.SignalConstants.PLAYER_CONSOLE_ENABLED, data, key)
+			return Console.COMMAND_SUCCESS
 	
-	return Console.COMMAND_SUCCESS
+	if player_name == Global.STEAM_USERNAME:
+		return 'You cannot change your own permissions.'
+	
+	return "No player found with the name of '%s.'" % player_name 
+
 
 
 func _on_LocalPlayer_died() -> void:

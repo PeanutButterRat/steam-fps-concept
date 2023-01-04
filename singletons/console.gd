@@ -32,8 +32,3 @@ func register(command: String, reference: FuncRef) -> void:
 
 func _default(_args: Array) -> String:
 	return "Command not found."
-
-
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed('jump') and enabled:
-		get_tree().set_input_as_handled()

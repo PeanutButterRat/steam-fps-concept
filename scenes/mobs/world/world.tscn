@@ -20,6 +20,11 @@ script = ExtResource( 3 )
 OnlinePlayerScene = ExtResource( 4 )
 TimmyScene = ExtResource( 5 )
 
+[node name="ConsoleLayer" type="CanvasLayer" parent="."]
+
+[node name="Console" parent="ConsoleLayer" instance=ExtResource( 6 )]
+process_priority = -1
+
 [node name="Floor" type="StaticBody" parent="."]
 unique_name_in_owner = true
 transform = Transform( 100, 0, 0, 0, 1, 0, 0, 0, 100, 0, 0, 0 )
@@ -49,7 +54,3 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.69174, 0 )
 [node name="Spawn" type="Spatial" parent="."]
 unique_name_in_owner = true
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.13246, -4.73626 )
-
-[node name="ConsoleLayer" type="CanvasLayer" parent="."]
-
-[node name="Console" parent="ConsoleLayer" instance=ExtResource( 6 )]

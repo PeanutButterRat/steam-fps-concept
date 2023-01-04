@@ -2,6 +2,7 @@ extends Control
 
 
 const COLOR_ERROR: Color = Color.indianred
+const SPACE_LITERAL_CHARACTER = '^'
 
 onready var line: LineEdit = $'%LineEdit'
 onready var animations: AnimationPlayer = $'%AnimationPlayer'
@@ -14,6 +15,7 @@ var last_command: String = ''
 
 func _ready() -> void:
 	feedback.set("custom_colors/font_color", COLOR_ERROR)
+	process_priority = -1
 	hide()
 
 
@@ -21,12 +23,14 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed('console'):  # User opens console.
 		close() if visible else open()
 		get_tree().set_input_as_handled()
-	elif event.is_action_pressed('ui_cancel') and visible:  # User is in console and wants to leave.
-		close()
-	elif event.is_action_pressed('ui_focus_next') and visible:  # Autocomplete last command.
-		_on_LineEdit_text_changed(last_command)
-	elif event.is_action_pressed('attack') and visible:
-		get_tree().set_input_as_handled()
+	
+	if visible:
+		if event.is_action_pressed('ui_cancel'):  # User is in console and wants to leave.
+			close()
+		elif event.is_action_pressed('ui_focus_next'):  # Autocomplete last command.
+			_on_LineEdit_text_changed(last_command)
+		elif event.is_action_pressed('attack') or event is InputEventMouseMotion:
+			get_tree().set_input_as_handled()
 
 
 func _on_LineEdit_text_changed(new_text: String) -> void:
@@ -42,8 +46,12 @@ func _on_LineEdit_text_entered(new_text: String) -> void:
 	# Parse command.
 	last_command = new_text
 	var strings: Array = new_text.split(' ', false)
-	var command: String = strings[0]
-	var arguments: Array = strings.slice(1, -1)
+	var command: String = strings.pop_front()
+	var arguments: PoolStringArray = []
+	
+	for string in strings:
+		arguments.append(string.replace(SPACE_LITERAL_CHARACTER, ' '))
+	
 	Logging.debug('Command entered: [%s], arguments: %s.' % [command, arguments])
 	
 	# Execute the command.

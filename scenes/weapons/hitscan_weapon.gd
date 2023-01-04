@@ -30,7 +30,7 @@ func swap_weapon() -> void:
 	_animations.play(SWAP_ANIMATION_NAME)
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed('attack'):
 		attack()
 		get_tree().set_input_as_handled()

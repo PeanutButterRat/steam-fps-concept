@@ -19,8 +19,8 @@ signal weapon_fired(data, sender)
 signal weapon_reloaded(data, sender)
 signal weapon_swapped(data, sender)
 signal player_teleported(data, sender)
-signal player_opped(data, sender)
 signal player_state_changed(data, sender)
+signal player_console_enabled(data, sender)
 
 
 enum SignalConstants {
@@ -41,7 +41,7 @@ enum SignalConstants {
 	CROUCHED,
 	UNCROUCHED,
 	PLAYER_TELEPORTED,
-	PLAYER_CONSOLE_ENABLED
+	PLAYER_CONSOLE_ENABLED,
 	PLAYER_STATE_CHANGED
 }
 
@@ -62,6 +62,8 @@ enum LobbyVisibility {
 const SIGNAL_RECIEVED_KEY: String = 'signal'
 const SIGNAL_DATA_KEY: String = 'data'
 const PACKET_SENDER_KEY: String = 'sender'
+const JOINED_LOBBY_SUCCESSFULLY = 1
+const LOBBY_NAME_KEY: String = 'name'
 
 # Steam variables.
 var IS_OWNED: bool = false
@@ -82,6 +84,7 @@ var unique_id_counter: int = 1000 setget set_unique_id_counter
 
 func _ready() -> void:
 	_initialize_Steam()
+	
 	Steam.connect('lobby_created', self, '_on_Lobby_Created')
 	Steam.connect('lobby_match_list', self, '_on_Lobby_Match_List')
 	Steam.connect('lobby_joined', self, '_on_Lobby_Joined')
@@ -231,8 +234,7 @@ func _on_Lobby_Created(connect: int, lob_id: int) -> void:
 		Steam.setLobbyJoinable(lob_id, true)  # Just in case (should be default).
 		Logging.debug('Allowing Steam to be relay backup: ' + str(Steam.allowP2PPacketRelay(true)))  # If needed.
 		
-		Steam.setLobbyData(lob_id, 'name', lobby_name)
-		Steam.setLobbyData(lob_id, 'mode', 'GodotSteam test')
+		Steam.setLobbyData(lob_id, LOBBY_NAME_KEY, lobby_name)
 
 
 func _on_Lobby_Join_Requested(lob_id: int, friendID: int) -> void:
@@ -275,8 +277,8 @@ func join_lobby(lob_id: int) -> void:
 
 func _on_Lobby_Joined(lob_id: int, _permissions: int, _locked: bool, response: int) -> void:
 	if response == 1:  # Joining was successful.
-		lobby_name = Steam.getLobbyData(lob_id, 'name')
 		lobby_id = lob_id
+		lobby_name = Steam.getLobbyData(lobby_id, LOBBY_NAME_KEY)
 		lobby_members = _get_lobby_members()
 		emit_signal('player_list_changed', lobby_members)
 		emit_signal('chat_event_occured', 'Joined ' + lobby_name + ' successfully.')

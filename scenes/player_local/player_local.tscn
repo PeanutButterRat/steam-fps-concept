@@ -29,6 +29,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0 )
 
 [node name="Revolver" parent="Camera" instance=ExtResource( 1 )]
 unique_name_in_owner = true
+process_priority = 0
 transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0.47044, -0.259324, -0.788015 )
 
 [node name="DebugHUD" type="Panel" parent="."]

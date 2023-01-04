@@ -70,6 +70,8 @@ var wallrunning: bool = false
 func _ready() -> void:
 	current_weapon.connect('ammo_changed', self, '_on_Weapon_ammo_changed')
 	current_weapon.connect('damaged_mob', self, '_on_Weapon_damaged_mob')
+	Global.connect('player_console_enabled', self, '_on_Global_player_console_enabled')
+	Global.connect('player_teleported', self, '_on_Global_player_teleported')
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	healthbar.value = health
 

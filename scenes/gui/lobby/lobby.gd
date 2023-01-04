@@ -19,7 +19,6 @@ func _on_Create_pressed() -> void:
 		
 		if lobby_name.empty(): lobby_name = Global.STEAM_USERNAME + "'s Lobby"
 		Global.lobby_name = lobby_name
-		
 		Steam.createLobby(Global.LobbyVisibility.PUBLIC, Global.lobby_max_members)
 
 
