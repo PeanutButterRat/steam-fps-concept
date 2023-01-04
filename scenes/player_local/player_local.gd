@@ -239,6 +239,6 @@ func remove_weapon(weapon: Weapon) -> void:
 
 func _on_DebugTimer_timeout():
 	$"%Position".text = str(translation)
-	$"%InputLabel".text = str(input)
 	$"%VelocityLabel".text = str(velocity.length())
 	$"%StateLabel".text = str(State.keys()[previous_state])
+	$'%Raycast'.text = current_weapon._raycast.get_collider()

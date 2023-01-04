@@ -138,12 +138,12 @@ margin_bottom = 119.0
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/State"]
-margin_left = 72.0
-margin_right = 172.0
+margin_left = 104.0
+margin_right = 140.0
 margin_bottom = 37.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
-text = "Able to wallrun:"
+text = "State:"
 align = 1
 valign = 1
 
@@ -183,23 +183,23 @@ size_flags_vertical = 5
 align = 1
 valign = 1
 
-[node name="Input" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
+[node name="Looking" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
 margin_top = 164.0
 margin_right = 493.0
 margin_bottom = 202.0
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Input"]
-margin_left = 103.0
-margin_right = 141.0
+[node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Looking"]
+margin_left = 87.0
+margin_right = 156.0
 margin_bottom = 38.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
-text = "Input:"
+text = "Looking at:"
 align = 1
 valign = 1
 
-[node name="InputLabel" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Input"]
+[node name="Raycast" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Looking"]
 unique_name_in_owner = true
 margin_left = 370.0
 margin_right = 370.0
@@ -226,8 +226,5 @@ anchor_right = 1.0
 margin_left = -403.0
 margin_right = 0.0
 margin_bottom = 189.0
-
-[node name="Weapons" type="Spatial" parent="."]
-unique_name_in_owner = true
 
 [connection signal="timeout" from="DebugHUD/DebugTimer" to="." method="_on_DebugTimer_timeout"]

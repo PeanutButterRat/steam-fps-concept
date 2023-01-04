@@ -49,13 +49,13 @@ func _on_Global_recieved_lobby_list(lobbies: Array) -> void:
 		option.queue_free()
 
 	for lobby in lobbies:
-		var lobby_name: String = Steam.getLobbyData(lobby, "name")
-		var lobby_mode: String = Steam.getLobbyData(lobby, "mode")
+		var lobby_name: String = Steam.getLobbyData(lobby, Global.LOBBY_NAME_KEY)
+		var lobby_mode: String = Steam.getLobbyData(lobby, Global.LOBBY_MODE_KEY)
 		var members: int = Steam.getNumLobbyMembers(lobby)
 		
 		if lobby_name and lobby_mode:
 			var button: Button = Button.new()
-			button.text = '%s: %s (%d)' % [lobby_name, lobby_mode, members]
+			button.text = '%s: %s (%d)' % [lobby_name, members]
 			button.connect("pressed", Global, "join_lobby", [lobby])
 		
 			lobby_list.add_child(button)

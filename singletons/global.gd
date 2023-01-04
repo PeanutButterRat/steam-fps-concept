@@ -64,6 +64,7 @@ const SIGNAL_DATA_KEY: String = 'data'
 const PACKET_SENDER_KEY: String = 'sender'
 const JOINED_LOBBY_SUCCESSFULLY = 1
 const LOBBY_NAME_KEY: String = 'name'
+const LOBBY_MODE_KEY: String = 'mode'
 
 # Steam variables.
 var IS_OWNED: bool = false
@@ -235,6 +236,7 @@ func _on_Lobby_Created(connect: int, lob_id: int) -> void:
 		Logging.debug('Allowing Steam to be relay backup: ' + str(Steam.allowP2PPacketRelay(true)))  # If needed.
 		
 		Steam.setLobbyData(lob_id, LOBBY_NAME_KEY, lobby_name)
+		Steam.setLobbyData(lob_id, LOBBY_MODE_KEY, 'Duel Beta')
 
 
 func _on_Lobby_Join_Requested(lob_id: int, friendID: int) -> void:
