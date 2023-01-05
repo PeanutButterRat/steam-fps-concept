@@ -1,49 +1,89 @@
 class_name Mob extends KinematicBody
 
 
-signal damaged(entity, amount, attacker)
-signal healed(entity)
-signal died(entity)
+const MAX_TYPE_ID: int = 5000
 
-const MOB_GROUP: String = 'Mobs'
+enum Type {
+	TIMMY = 1,
+	ONLINE_PLAYER = 2
+}
 
-export var max_health: float = 100.0
+const PATHS: Dictionary = {
+	Type.TIMMY: 'res://scenes/mobs/timmy/timmy.tscn',
+	Type.ONLINE_PLAYER: 'res://scenes/mobs/player_online/player_online.tscn'
+}
 
-var health: float = max_health
-var parts: Array = []
+export var _max_health: float = 100.0
+
+var last_attacker: int = 0
+var last_healer: int = 0
+var health: float = _max_health
+var nickname: String = ''
+var id: int = 0
 
 
-static func get_mob_from_part(part: MobHitbox) -> Mob:
-	var mobs: Array = part.get_tree().get_nodes_in_group(MOB_GROUP)
+static func create(type: int, mob_id: int) -> Mob:
+	var path: String = PATHS.get(type)
 	
-	for mob in mobs:
-		if part in mob.parts:
-			return mob
+	if path == null:
+		Logging.error('Attempted to instantiate an invalid mob type.')
+		return null
 	
-	return null
+	var instance: Mob = load(path).instance()
+	instance.id = mob_id
+	
+	return instance
 
 
 func _ready() -> void:
-	add_to_group(MOB_GROUP)
-	for child in get_children():
+	seed(OS.get_unix_time())
+	connect_hitboxes(self, self)  # DSF search for all mob hitboxes.
+	Global.connect('mob_damaged', self ,'_on_Global_mob_damaged')
+
+
+func connect_hitboxes(root: Mob, current: Node) -> void:
+	for child in current.get_children():
 		if child is MobHitbox:
-			child.connect('damaged', self, 'damage')
-			parts.append(child)
+			child.connect('damaged', root, '_on_MobHitbox_damaged')
+			child.connect('healed', root, '_on_MobHitbox_healed')
 
 
-func damage(amount: float, _attacker: String) -> void:
+func damage(amount: float, attacker: int) -> void:
 	health -= amount
-	emit_signal('damaged', self, amount, _attacker)
+	last_attacker = attacker
 
 
-func heal(amount: float) -> void:
+func _on_MobHitbox_damaged(amount: float, attacker: int, critical: bool) -> void:
+	damage(amount, attacker)
+	var data: Array = [id, amount, last_attacker, critical]
+	Global.send_signal(Global.Signals.MOB_DAMAGED, data)
+	
+	if health <= 0:
+		data[1] = randi()
+		data.append(nickname)
+		Global.send_signal(Global.Signals.MOB_KILLED, data)
+
+
+func heal(amount: float, healer: int) -> void:
 	health += amount
-	emit_signal('healed', self)
+	last_attacker = healer
 
 
-func is_dead() -> bool:
-	return health <= 0
+func _on_MobHitbox_healed(amount: float, healer: int, critical: bool) -> void:
+	heal(amount, healer)
+	
+	var data: Array = [id, amount, last_healer, critical]
+	Global.send_signal(Global.Signals.MOB_HEALED, data)
+	var mob_id: int = data[0]
+	var mob_transform: Transform = data[1]
+	
+	if mob_id == id:
+		transform = mob_transform
 
 
-func kill() -> void:
-	emit_signal('died', self)
+func _on_Global_mob_damaged(data: Array) -> void:
+	var mob_id: int = data[0]
+	var damage: float = data[1]
+	var attacker: int = data[2]
+	if mob_id == id:
+		damage(damage, attacker)

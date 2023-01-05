@@ -31,7 +31,7 @@ func _check_Command_Line() -> void:
 			Global.join_Lobby(int(ARGUMENTS[1]))
 
 
-func _on_Global_game_started(_data: Array, _sender: int):
+func _on_Global_game_started(_data: Array):
 	options_menu.hide()
 	world = WorldScene.instance()
 	add_child(world)

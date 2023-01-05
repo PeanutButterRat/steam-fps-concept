@@ -1,7 +1,5 @@
-extends KinematicBody
+extends Mob
 
-signal died
-signal state_changed(state)
 
 onready var camera: Camera = $'%Camera'
 onready var healthbar: ProgressBar = $'%ProgressBar'
@@ -27,7 +25,6 @@ enum State {
 }
 
 var max_health: float = 100.0
-var health: float = max_health setget set_health
 
 var crouchwalk_speed: float = 5.0
 var walk_speed: float = 10.0
@@ -69,12 +66,11 @@ var wallrunning: bool = false
 
 func _ready() -> void:
 	current_weapon.connect('ammo_changed', self, '_on_Weapon_ammo_changed')
-	current_weapon.connect('damaged_mob', self, '_on_Weapon_damaged_mob')
 	Global.connect('player_console_enabled', self, '_on_Global_player_console_enabled')
 	Global.connect('player_teleported', self, '_on_Global_player_teleported')
-	Global.connect('player_damaged', self, '_on_Global_player_damaged')
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	healthbar.value = health
+	id = Global.STEAM_ID
 
 
 func _physics_process(delta: float) -> void:
@@ -136,13 +132,10 @@ func _physics_process(delta: float) -> void:
 	velocity = velocity.linear_interpolate(intended_motion, acceleration * delta)
 	velocity = move_and_slide_with_snap(velocity, snap, Vector3.UP)
 	
-	if state != previous_state:
-		emit_signal('state_changed', state)
 	previous_state = state
 	
 	var data: Array = [transform]
-	Global.send_signal(Global.SignalConstants.PLAYER_MOVED, data, Global.Recipient.ALL_MINUS_CLIENT)
-
+	Global.send_signal(Global.Signals.PLAYER_MOVED, data)
 
 
 func _get_player_state(delta: float) -> int:
@@ -175,22 +168,9 @@ func _get_player_state(delta: float) -> int:
 		return State.FALLING
 
 
-
 func set_health(amount: float) -> void:
 	health -= amount
 	healthbar.value = health
-
-
-func damage(amount: float) -> void:
-	set_health(health - amount)
-	if health <= 0:
-		var data: Array = [Global.STEAM_ID, randi(), last_attacking_mob] # The random integer is for choosing a killstring for the killfeed.
-		Global.send_signal(Global.SignalConstants.PLAYER_DIED, data, Global.Recipient.ALL_MEMBERS)
-
-
-func _on_Self_state_changed(state: int) -> void:
-	var data: Array = [state]
-	Global.send_signal(Global.SignalConstants.PLAYER_STATE_CHANGED, data, Global.Recipient.ALL_MINUS_CLIENT)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -200,39 +180,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		camera.rotation.x = clamp(camera.rotation.x, deg2rad(-89), deg2rad(89))
 
 
-func _on_Global_player_damaged(data: Array, sender: int) -> void:
-	var id: int = data[0]
-	if id == Global.STEAM_ID:
-		var amount: float = data[1]
-		last_attacking_mob = Steam.getFriendPersonaName(sender)
-		damage(amount)
+
+func damage(amount: float, attacker: int) -> void:
+	health -= amount
+	last_attacker = attacker
+	healthbar.value = health
 
 
-func _on_Global_player_teleported(data: Array, _sender: int) -> void:
+func _on_Global_player_teleported(data: Array) -> void:
 	var id: int = data[0]
 	if id == Global.STEAM_ID:
 		var position: Vector3 = data[1]
 		translation = position
 
 
-func _on_Global_player_console_enabled(data: Array, _sender: int) -> void:
+func _on_Global_player_console_enabled(data: Array) -> void:
 	var id: int = data[0]
 	if id != Global.STEAM_ID:  # Do not de-op oneself.
 		Console.enabled = not Console.enabled
-
-
-func _on_Weapon_damaged_mob(part: MobHitbox) -> void:
-	var mob: Mob = Mob.get_mob_from_part(part)
-	
-	if mob != null:
-		var hitmarker_name: String = Hitmarker.NORMAL_ANIMATION_NAME
-		if mob.is_dead():
-			hitmarker_name = Hitmarker.KILL_ANIMATION_NAME
-			mob.kill()
-		elif part.is_critical():
-			hitmarker_name = Hitmarker.CRITICAL_ANIMATION_NAME
-		
-		hud.play_hitmarker(hitmarker_name)
 
 
 func _on_Weapon_ammo_changed(current_ammo: int, magazine_capacity: int, reserve_capacity: int) -> void:

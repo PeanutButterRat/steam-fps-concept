@@ -9,7 +9,6 @@ const FILEPATH: String = 'res://settings.ini'
 var _config: ConfigFile  # Saved settings.
 
 
-
 func _ready() -> void:
 	_config = ConfigFile.new()
 	var error = _config.load(FILEPATH)
@@ -35,4 +34,3 @@ func save(section: String, key: String, value) -> void:
 
 func retrieve(section: String, key: String, default):
 	return _config.get_value(section, key, default)
-

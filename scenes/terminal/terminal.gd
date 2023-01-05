@@ -61,7 +61,7 @@ func _on_LineEdit_text_entered(new_text: String) -> void:
 	# Set up the feedback message.
 	feedback.text = message
 	
-	if message == Console.COMMAND_SUCCESS:
+	if message == Console.SUCCESS:
 		close()
 	# Reset the feedback timer if the message icon is already displayed.
 	elif not timer.is_stopped():

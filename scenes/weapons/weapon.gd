@@ -3,7 +3,6 @@ class_name Weapon extends Spatial
 
 signal swapped
 signal ammo_changed(current_ammo, magazine_capacity, reserve_capacity)
-signal damaged_mob(entity)
 signal attacked
 signal reloaded
 
@@ -31,6 +30,3 @@ func reload() -> void:
 func aim() -> void:
 	pass
 
-
-static func get_weapon_scene(weapon_name: String) -> void:
-	pass

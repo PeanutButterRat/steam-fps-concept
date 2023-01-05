@@ -67,4 +67,4 @@ func _on_Start_pressed() -> void:
 	if Steam.getLobbyOwner(Global.lobby_id) != Global.STEAM_ID:
 		return  # Must be host.
 	
-	Global.send_signal(Global.SignalConstants.GAME_STARTED, [], Global.Recipient.ALL_MEMBERS)
+	Global.send_signal(Global.Signals.GAME_STARTED, [])

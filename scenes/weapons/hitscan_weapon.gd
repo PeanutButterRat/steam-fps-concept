@@ -83,6 +83,5 @@ func _on_AnimationPlayer_animation_finished(anim_name: String) -> void:
 
 func _on_Self_attacked():
 	if _raycast.get_collider() is MobHitbox:
-		var part: MobHitbox = _raycast.get_collider()
-		part.damage(_damage, Global.STEAM_USERNAME)
-		emit_signal('damaged_mob', part)
+		var component: MobHitbox = _raycast.get_collider()
+		component.damage(_damage, Global.STEAM_ID)

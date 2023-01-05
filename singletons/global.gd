@@ -7,44 +7,38 @@ signal lobby_created(lobby_id)
 signal recieved_lobby_list(lobbies)
 signal chat_event_occured(event)
 
-signal game_started(data, sender)
-signal player_moved(data, sender)
-signal player_damaged(data, sender)
-signal player_died(data, sender)
-signal timmy_spawned(data, sender)
-signal shot_environment(data, sender)
-signal timmy_damaged(data, sender)
-signal timmy_died(data, sender)
-signal weapon_fired(data, sender)
-signal weapon_reloaded(data, sender)
-signal weapon_swapped(data, sender)
-signal player_teleported(data, sender)
-signal player_state_changed(data, sender)
-signal player_console_enabled(data, sender)
+signal game_started(data)  # []  (lobby)
+signal mob_damaged(data)  # [Mob ID, damage, attacker]
+signal mob_killed(data)  # [Mob ID, random integer, attacker]
+signal mob_moved(data)  # [Mob ID, mob transform]
+signal mob_state_changed(data)
+signal mob_spawned(data)  # [Mob type, mob ID, transform]
+
+signal weapon_fired(data)
+signal weapon_reloaded(data)
+signal weapon_swapped(data)
+
+signal player_moved(data)  # [ID, transform]
+signal player_teleported(data)
+signal player_state_changed(data)
+signal player_console_enabled(data)
 
 
-enum SignalConstants {
+enum Signals {
 	NONE,
 	GAME_STARTED,
-	PLAYER_MOVED,
-	PLAYER_DAMAGED,
-	PLAYER_DIED,
-	TIMMY_SPAWNED,
-	SHOT_ENVIRONMENT,
-	TIMMY_DAMAGED,
-	TIMMY_DIED,
+	MOB_DAMAGED,
+	MOB_KILLED,
+	MOB_STATE_CHANGED,
+	MOB_SPAWNED,
 	WEAPON_FIRED,
 	WEAPON_RELOADED,
 	WEAPON_SWAPPED,
-	SPRINT_STARTED,
-	SPRINT_ENDED,
-	CROUCHED,
-	UNCROUCHED,
+	PLAYER_MOVED,
 	PLAYER_TELEPORTED,
 	PLAYER_CONSOLE_ENABLED,
 	PLAYER_STATE_CHANGED
 }
-
 
 enum Recipient {
 	ALL_MEMBERS = -2, 
@@ -65,6 +59,7 @@ const PACKET_SENDER_KEY: String = 'sender'
 const JOINED_LOBBY_SUCCESSFULLY = 1
 const LOBBY_NAME_KEY: String = 'name'
 const LOBBY_MODE_KEY: String = 'mode'
+const STEAM_ID_REMOTE_KEY: String = 'steam_id_remote'
 
 # Steam variables.
 var IS_OWNED: bool = false
@@ -79,6 +74,7 @@ var lobby_members: Array = []
 var lobby_vote_kick: bool = false
 var lobby_max_members: int = 4
 var lobby_name: String = "Unnamed Lobby"
+var lobby_owner: int = 0
 
 var unique_id_counter: int = 1000 setget set_unique_id_counter
 
@@ -117,7 +113,7 @@ func set_unique_id_counter(value: int) -> void:
 
 
 func get_signal_string(value: int) -> String:
-	var string: String = SignalConstants.keys()[value]
+	var string: String = Signals.keys()[value]
 	return string.to_lower()
 
 
@@ -145,15 +141,15 @@ func _make_P2P_Handshake() -> void:
 
 
 func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
+	if lobby_id == 0:
+		return
+		
 	var SEND_TYPE: int = Steam.P2P_SEND_RELIABLE
 	var CHANNEL: int = 0
 	
 	# Create a data array to send the data through
 	var DATA: PoolByteArray = []
 	DATA.append_array(var2bytes(packet_data))
-	
-	if lobby_id == 0:
-		Steam.sendP2PPacket(STEAM_ID, DATA, SEND_TYPE, CHANNEL)
 	
 	# Send the packet to everyone excluding the host.
 	if target == Recipient.ALL_MINUS_CLIENT:
@@ -167,8 +163,8 @@ func send_P2P_Packet(target: int, packet_data: Dictionary) -> void:
 			Steam.sendP2PPacket(member, DATA, SEND_TYPE, CHANNEL)
 	
 	# Send the packet to lobby host.
-	elif target == Recipient.HOST and lobby_id != 0:
-		Steam.sendP2PPacket(Steam.getLobbyOwner(lobby_id), DATA, SEND_TYPE, CHANNEL)
+	elif target == Recipient.HOST:
+		Steam.sendP2PPacket(lobby_owner, DATA, SEND_TYPE, CHANNEL)
 	
 	# Send to specific Recipient.
 	else:
@@ -184,16 +180,19 @@ func _read_P2P_Packet() -> void:
 		if PACKET.empty():
 			Logging.warn('Read an empty packet with non-zero size.')
 		
-		var sender: int = PACKET['steam_id_remote']  # Steam ID.
+		var sender: int = PACKET[STEAM_ID_REMOTE_KEY]  # Steam ID.
 		var readable_packet: Dictionary = bytes2var(PACKET['data'])
 		
 		readable_packet[PACKET_SENDER_KEY] = sender
 		
 		# Deal with packet data.
-		var signal_id: int = readable_packet.get(SIGNAL_RECIEVED_KEY, SignalConstants.NONE)
-		if signal_id != SignalConstants.NONE:
+		var signal_id: int = readable_packet.get(SIGNAL_RECIEVED_KEY, Signals.NONE)
+		if signal_id != Signals.NONE:
 			var signal_string: String = get_signal_string(signal_id)
-			emit_signal(signal_string, readable_packet[SIGNAL_DATA_KEY], sender)
+			emit_signal(signal_string, readable_packet[SIGNAL_DATA_KEY])
+		
+		if lobby_owner == STEAM_ID:  # Relay the packet if host.
+			send_P2P_Packet(Recipient.ALL_MINUS_CLIENT, readable_packet)
 
 
 func _read_All_P2P_Packets(read_count: int = 0):
@@ -272,7 +271,7 @@ func join_lobby(lob_id: int) -> void:
 	
 	# Clear any previous lobby members lists, if you were in a previous lobby.
 	lobby_members.clear()
-
+	lobby_owner = Steam.getLobbyOwner(lobby_id)
 	# Make the lobby join request to Steam.
 	Steam.joinLobby(lob_id)
 
@@ -309,6 +308,7 @@ func _on_Lobby_Joined(lob_id: int, _permissions: int, _locked: bool, response: i
 
 func _on_Lobby_Data_Update(success: int, _lobby_id: int, _member_id: int):
 	Logging.debug('Lobby data updated: ' + 'succeses' if success else 'failed')
+	lobby_owner = Steam.getLobbyOwner(_lobby_id)
 
 
 func leave_Lobby() -> void:
@@ -343,10 +343,10 @@ func _on_Lobby_Chat_Update(_lobby_id: int, changed_id: int, making_change_id: in
 	Logging.debug('Lobby chat update: %d (changed_id), %d (making_change_id)' % [changed_id, making_change_id])
 
 
-func send_signal(signal_id: int, data: Array, recipient: int) -> void:
+func send_signal(signal_id: int, data: Array) -> void:
 	var message: Dictionary = {
 		Global.SIGNAL_RECIEVED_KEY: signal_id,
 		Global.SIGNAL_DATA_KEY: data
 	}
 	
-	Global.send_P2P_Packet(recipient, message)
+	Global.send_P2P_Packet(Global.Recipient.HOST, message)

@@ -1,9 +1,9 @@
 extends Node
 
 
-const COMMAND_SUCCESS: String = 'Command was successfully executed.'
-const COMMAND_TYPE_ERROR: String = 'Improper type for one of the arguments.'
-const COMMAND_COUNT_ERROR: String = 'Improper number of supplied arguments.'
+const SUCCESS: String = 'Command was successfully executed.'
+const TYPE_ERROR: String = 'Improper type for one of the arguments.'
+const COUNT_ERROR: String = 'Improper number of supplied arguments.'
 
 onready var commands: Dictionary = {}
 onready var default: FuncRef = funcref(self, '_default')
