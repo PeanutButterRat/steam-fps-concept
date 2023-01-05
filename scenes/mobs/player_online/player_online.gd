@@ -16,6 +16,3 @@ func set_nametag(string: String) -> void:
 	else:
 		nametag.text = string
 		nickname = string
-
-
-func _on_Global_mob_damaged(data: Array) -> int:
