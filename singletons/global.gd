@@ -12,7 +12,7 @@ signal mob_damaged(data)  # [Mob ID, damage, attacker]
 signal mob_killed(data)  # [Mob ID, random integer, attacker]
 signal mob_moved(data)  # [Mob ID, mob transform]
 signal mob_state_changed(data)
-signal mob_spawned(data)  # [Mob type, mob ID, transform]
+signal mob_spawned(data)  # [Mob type, mob ID, translation]
 
 signal weapon_fired(data)
 signal weapon_reloaded(data)

@@ -1,10 +1,13 @@
 extends Mob
 
 
+signal respawned
+
 onready var camera: Camera = $'%Camera'
 onready var healthbar: ProgressBar = $'%ProgressBar'
 onready var hud: Control = $"%HUD"
 onready var current_weapon: Weapon = $'%Revolver'
+onready var debug_timer: Timer = $"%DebugTimer"
 
 const ACCELERATION_DEFAULT: = 10
 const ACCELERATION_AIR_ACTIVE: = 5
@@ -45,7 +48,7 @@ var slide_force: float = 100
 var velocity: Vector3
 var snap: Vector3
 
-var jump_force := 10
+var jump_force: float = 10.0
 var able_to_wallrun: bool = false
 var horizontal_walljump_force: float = 10.0
 var vertical_walljump_force: float = jump_force
@@ -56,9 +59,6 @@ var vector: Vector3 = Vector3.ZERO
 var input: Vector3
 
 var weapons: Array = []
-
-onready var debug_timer: Timer = $"%DebugTimer"
-
 var time_to_wallrun: float = 0.5
 var wallrun_timer: float = time_to_wallrun
 
@@ -70,7 +70,6 @@ func _ready() -> void:
 	Global.connect('player_teleported', self, '_on_Global_player_teleported')
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	healthbar.value = health
-	id = Global.STEAM_ID
 
 
 func _physics_process(delta: float) -> void:
@@ -180,7 +179,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		camera.rotation.x = clamp(camera.rotation.x, deg2rad(-89), deg2rad(89))
 
 
-
 func damage(amount: float, attacker: int) -> void:
 	health -= amount
 	last_attacker = attacker
@@ -212,8 +210,16 @@ func remove_weapon(weapon: Weapon) -> void:
 	weapons.erase(weapon)
 
 
+func kill() -> void:
+	$HUDLayer/DeathConfirmation.popup()
+
+
 func _on_DebugTimer_timeout():
 	$"%Position".text = str(translation)
 	$"%VelocityLabel".text = str(velocity.length())
 	$"%StateLabel".text = str(State.keys()[previous_state])
 	$'%Raycast'.text = current_weapon._raycast.get_collider().name if current_weapon._raycast.get_collider() else 'Nothing'
+
+
+func _on_Respawn_pressed() -> void:
+	emit_signal('respawned')

@@ -2,12 +2,12 @@ extends Spatial
 
 
 onready var spawn: Spatial = $'%Spawn'
-onready var local_player: Mob = $'%LocalPlayer'
 
 var command_spawn: FuncRef = funcref(self, '_on_Command_spawn')
 var command_teleport_player: FuncRef = funcref(self, '_on_Command_teleport_player')
 var command_op_player: FuncRef = funcref(self, '_on_Command_op_player')
 var mobs: Dictionary = {}
+var local_player: Mob
 
 
 func _ready() -> void:
@@ -19,24 +19,25 @@ func _ready() -> void:
 	Console.register('tp', command_teleport_player)
 	Console.register('op', command_op_player)
 	
-	mobs[Global.STEAM_ID] = local_player
 
-	_update_players(Global.lobby_members)
-
-
-func _update_players(players: Array) -> void:
-	for steam_id in players:
-		if not steam_id in mobs:
-			spawn_mob(Mob.Type.ONLINE_PLAYER, steam_id, spawn.transform)
-			mobs[steam_id].set_nametag(Steam.getFriendPersonaName(steam_id))
+	var data: Array = [Mob.Type.ONLINE_PLAYER, Global.STEAM_ID, spawn.translation]
+	Global.send_signal(Global.Signals.MOB_SPAWNED, data)
 
 
-func spawn_mob(type: int, mob_id: int, mob_transform: Transform) -> void:
+func spawn_mob(type: int, mob_id: int, mob_translation: Vector3) -> Mob:
 	var mob: Mob = Mob.create(type, mob_id)
-	mob.transform = mob_transform
-	
+	mob.translation = mob_translation
 	mobs[mob_id] = mob
 	add_child(mob)
+	
+	return mob
+
+
+func remove_mob(id: int) -> void:
+	var mob: Mob = mobs[id]
+	remove_child(mob)
+	mobs.erase(id)
+	mob.queue_free()
 
 
 func _on_Command_spawn(arguments: Array) -> String:
@@ -52,7 +53,7 @@ func _on_Command_spawn(arguments: Array) -> String:
 		_:
 			return 'Invalid mob type.'
 	
-	var data: Array = [type, Global.generate_unique_id(), local_player.transform]
+	var data: Array = [type, Global.generate_unique_id(), local_player.translation]
 	Global.send_signal(Global.Signals.MOB_SPAWNED, data)
 	return Console.SUCCESS
 
@@ -60,19 +61,24 @@ func _on_Command_spawn(arguments: Array) -> String:
 func _on_Global_mob_spawned(data: Array) -> void:
 	var type: int = data[0]
 	var mob_id: int = data[1]
-	var mob_transform: Transform = data[2]
+	var mob_translation: Vector3 = data[2]
 	
-	spawn_mob(type, mob_id, mob_transform)
+	if mob_id == Global.STEAM_ID:
+		type = Mob.Type.LOCAL_PLAYER
+	
+	var mob: Mob = spawn_mob(type, mob_id, mob_translation)
+	
+	if mob_id == Global.STEAM_ID:
+		local_player = mob
 
 
 func _on_Global_mob_killed(data: Array) -> void:
 	var id: int = data[0]
 	if id in mobs:
 		if id == local_player.id:
-			pass
+			local_player.kill()
 		else:
-			remove_child(mobs[id])
-			mobs.erase(id)
+			remove_mob(id)
 
 
 func _on_Command_teleport_player(args: Array) -> String:
@@ -130,3 +136,9 @@ func _on_Command_kill(args: Array) -> String:
 		local_player.kill()
 	
 	return Console.COMMAND_SUCCESS
+
+#[Mob type, mob ID, transform]
+func _on_LocalPlayer_respawned() -> void:
+	remove_mob(local_player.id)
+	var data: Array = [Mob.Type.ONLINE_PLAYER, Global.STEAM_ID, spawn.translation]
+	Global.send_signal(Global.Signals.MOB_SPAWNED, data)

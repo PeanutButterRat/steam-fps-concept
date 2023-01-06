@@ -5,11 +5,13 @@ const MAX_TYPE_ID: int = 5000
 
 enum Type {
 	TIMMY = 1,
-	ONLINE_PLAYER = 2
+	LOCAL_PLAYER = 2
+	ONLINE_PLAYER = 3
 }
 
 const PATHS: Dictionary = {
 	Type.TIMMY: 'res://scenes/mobs/timmy/timmy.tscn',
+	Type.LOCAL_PLAYER: 'res://scenes/player_local/player_local.tscn',
 	Type.ONLINE_PLAYER: 'res://scenes/mobs/player_online/player_online.tscn'
 }
 
