@@ -1,6 +1,9 @@
 extends Spatial
 
 
+
+const NO_PLAYER_FOUND: int = 0
+
 onready var spawn: Spatial = $'%Spawn'
 onready var death_confirmation: Popup = $'%DeathConfirmation'
 var command_spawn: FuncRef = funcref(self, '_on_Command_spawn')
@@ -90,50 +93,49 @@ func _on_Command_teleport_player(args: Array) -> String:
 	if len(args) != 1:
 		return Console.COUNT_ERROR
 	
-	var player_name: String = args[0]
+	if local_player == null:
+		return 'Cannot teleport players while dead.'
 	
-	for key in Global.lobby_members:
-		var steam_name: String = Steam.getFriendPersonaName(key)
-		if player_name == steam_name:
-			var data: Array = [local_player.translation]
-			Global.send_signal(Global.Signals.PLAYER_TELEPORTED, data)
-			return Console.SUCCESS
+	var username: String = args[0]
+	var id: int = get_lobby_member_id_from_name(username)
 	
-	if player_name == Global.STEAM_USERNAME:
+	if id == Global.STEAM_ID:
 		return 'You cannot teleport yourself.'
-	
-	return "No player found with the name of '%s.'" % player_name
+	elif id != NO_PLAYER_FOUND:
+		var data: Array = [id, local_player.translation]
+		Global.send_signal(Global.Signals.MOB_TELEPORTED, data)
+		return Console.SUCCESS
+	else:
+		return "No player found with the name of '%s.'" % username
 
 
 func _on_Command_op_player(args: Array) -> String:
 	if len(args) != 1:
 		return Console.COUNT_ERROR
 	
-	var player_name: String = args[0]
-
-	for key in Global.lobby_members:
-		var steam_name: String = Steam.getFriendPersonaName(key)
-		if player_name == steam_name and key != Global.STEAM_ID:
-			var data: Array = [local_player.translation]
-			Global.send_signal(Global.Signals.PLAYER_CONSOLE_ENABLE, data)
-			return Console.SUCCESS
+	var username: String = args[0]
+	var id: int = get_lobby_member_id_from_name(username)
 	
-	if player_name == Global.STEAM_USERNAME:
+	if id == Global.STEAM_ID:
 		return 'You cannot change your own permissions.'
-	
-	return "No player found with the name of '%s.'" % player_name 
+	elif id != NO_PLAYER_FOUND:
+		var data: Array = [id]
+		Global.send_signal(Global.Signals.PLAYER_CONSOLE_ENABLE, data)
+		return Console.SUCCESS
+	else:
+		return "No player found with the name of '%s.'" % username 
 
 
 func _on_Global_player_list_changed(players: Array) -> void:
 	for mob_id in mobs:
 		if mob_id > Global.UNIQUE_ID_MAX and not mob_id in players:
 			remove_mob(mob_id)
-
+# [Mob ID, translation]
 
 func _on_Command_kill(args: Array) -> String:
 	for username in args:
 		var id: int = get_lobby_member_id_from_name(username)
-		if id != 0:
+		if id != NO_PLAYER_FOUND:
 			var data: Array = [id, randi(), Mob.WORLD_ID]
 			Global.send_signal(Global.Signals.MOB_KILLED, data)
 		else:
@@ -158,6 +160,6 @@ func get_lobby_member_id_from_name(username: String) -> int:
 		var nickname: String = Steam.getFriendPersonaName(id)
 		members[nickname] = id
 	
-	return members.get(username, 0)
+	return members.get(username, NO_PLAYER_FOUND)
 
 

@@ -18,9 +18,9 @@ signal weapon_fired(data)
 signal weapon_reloaded(data)
 signal weapon_swapped(data)
 
-signal player_teleported(data)
+signal mob_teleported(data)  # [Mob ID, translation]
+signal player_console_enabled(data)  # [Mob ID]
 signal player_state_changed(data)
-signal player_console_enabled(data)
 signal game_ended(data)  # []
 
 
@@ -35,7 +35,7 @@ enum Signals {
 	WEAPON_FIRED,
 	WEAPON_RELOADED,
 	WEAPON_SWAPPED,
-	PLAYER_TELEPORTED,
+	MOB_TELEPORTED,
 	PLAYER_CONSOLE_ENABLED,
 	PLAYER_STATE_CHANGED,
 	GAME_ENDED
