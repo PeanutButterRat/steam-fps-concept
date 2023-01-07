@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://scenes/weapons/revolver/revolver.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/gui/hud/hud.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/player_local/player_local.gd" type="Script" id=3]
-[ext_resource path="res://scenes/gui/killfeed/killfeed.tscn" type="PackedScene" id=4]
 
 [sub_resource type="CapsuleShape" id=6]
 
@@ -31,12 +30,13 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0 )
 unique_name_in_owner = true
 process_priority = 0
 transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0.47044, -0.259324, -0.788015 )
+_magazine_capacity = 6
 
 [node name="DebugHUD" type="Panel" parent="."]
-anchor_right = 0.262
-anchor_bottom = 0.197
-margin_right = 0.959961
-margin_bottom = 0.23999
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -75.0
+margin_right = 326.0
 
 [node name="MarginContainer" type="MarginContainer" parent="DebugHUD"]
 anchor_right = 1.0
@@ -49,18 +49,19 @@ custom_constants/margin_bottom = 5
 [node name="VerticalContainer" type="VBoxContainer" parent="DebugHUD/MarginContainer"]
 margin_left = 5.0
 margin_top = 5.0
-margin_right = 498.0
-margin_bottom = 207.0
+margin_right = 321.0
+margin_bottom = 70.0
 
 [node name="Position" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_right = 493.0
-margin_bottom = 37.0
+visible = false
+margin_right = 435.0
+margin_bottom = 34.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Position"]
-margin_right = 244.0
-margin_bottom = 37.0
+margin_right = 215.0
+margin_bottom = 34.0
 size_flags_horizontal = 3
 size_flags_vertical = 5
 text = "Position:"
@@ -69,24 +70,23 @@ valign = 1
 
 [node name="Position" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Position"]
 unique_name_in_owner = true
-margin_left = 248.0
-margin_right = 493.0
-margin_bottom = 37.0
+margin_left = 219.0
+margin_right = 435.0
+margin_bottom = 34.0
 size_flags_horizontal = 3
 size_flags_vertical = 5
 align = 1
 valign = 1
 
 [node name="Health" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_top = 41.0
-margin_right = 493.0
-margin_bottom = 78.0
+margin_right = 316.0
+margin_bottom = 65.0
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Health"]
-margin_left = 99.0
-margin_right = 145.0
-margin_bottom = 37.0
+margin_left = 55.0
+margin_right = 101.0
+margin_bottom = 65.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 text = "Health:"
@@ -95,10 +95,10 @@ valign = 1
 
 [node name="ProgressBar" type="ProgressBar" parent="DebugHUD/MarginContainer/VerticalContainer/Health"]
 unique_name_in_owner = true
-margin_left = 248.0
-margin_top = 11.0
-margin_right = 493.0
-margin_bottom = 25.0
+margin_left = 160.0
+margin_top = 25.0
+margin_right = 316.0
+margin_bottom = 39.0
 size_flags_horizontal = 3
 size_flags_vertical = 4
 rounded = true
@@ -132,15 +132,16 @@ align = 1
 valign = 1
 
 [node name="State" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_top = 82.0
-margin_right = 493.0
-margin_bottom = 119.0
+visible = false
+margin_top = 96.0
+margin_right = 435.0
+margin_bottom = 188.0
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/State"]
-margin_left = 104.0
-margin_right = 140.0
-margin_bottom = 37.0
+margin_left = 89.0
+margin_right = 125.0
+margin_bottom = 92.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 text = "State:"
@@ -149,24 +150,25 @@ valign = 1
 
 [node name="StateLabel" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/State"]
 unique_name_in_owner = true
-margin_left = 370.0
-margin_right = 370.0
-margin_bottom = 37.0
+margin_left = 327.0
+margin_right = 327.0
+margin_bottom = 92.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 align = 1
 valign = 1
 
 [node name="Velocity" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_top = 123.0
-margin_right = 493.0
-margin_bottom = 160.0
+visible = false
+margin_top = 128.0
+margin_right = 435.0
+margin_bottom = 188.0
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Velocity"]
-margin_left = 94.0
-margin_right = 149.0
-margin_bottom = 37.0
+margin_left = 80.0
+margin_right = 135.0
+margin_bottom = 60.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 text = "Velocity:"
@@ -175,24 +177,25 @@ valign = 1
 
 [node name="VelocityLabel" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Velocity"]
 unique_name_in_owner = true
-margin_left = 370.0
-margin_right = 370.0
-margin_bottom = 37.0
+margin_left = 327.0
+margin_right = 327.0
+margin_bottom = 60.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 align = 1
 valign = 1
 
 [node name="Looking" type="HBoxContainer" parent="DebugHUD/MarginContainer/VerticalContainer"]
-margin_top = 164.0
-margin_right = 493.0
-margin_bottom = 202.0
+visible = false
+margin_top = 144.0
+margin_right = 435.0
+margin_bottom = 188.0
 size_flags_vertical = 3
 
 [node name="Label" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Looking"]
-margin_left = 87.0
-margin_right = 156.0
-margin_bottom = 38.0
+margin_left = 73.0
+margin_right = 142.0
+margin_bottom = 44.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 text = "Looking at:"
@@ -201,9 +204,9 @@ valign = 1
 
 [node name="Raycast" type="Label" parent="DebugHUD/MarginContainer/VerticalContainer/Looking"]
 unique_name_in_owner = true
-margin_left = 370.0
-margin_right = 370.0
-margin_bottom = 38.0
+margin_left = 327.0
+margin_right = 327.0
+margin_bottom = 44.0
 size_flags_horizontal = 6
 size_flags_vertical = 5
 align = 1
@@ -219,12 +222,5 @@ process_priority = 1
 
 [node name="HUD" parent="HUDLayer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
-
-[node name="Killfeed" parent="HUDLayer" instance=ExtResource( 4 )]
-anchor_left = 1.0
-anchor_right = 1.0
-margin_left = -403.0
-margin_right = 0.0
-margin_bottom = 189.0
 
 [connection signal="timeout" from="DebugHUD/DebugTimer" to="." method="_on_DebugTimer_timeout"]

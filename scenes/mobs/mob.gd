@@ -48,6 +48,7 @@ func _ready() -> void:
 func connect_hitboxes(root: Node) -> void:
 	for child in root.get_children():
 		if child is MobHitbox:
+			print(child)
 			child.connect('damaged', self, '_on_MobHitbox_damaged')
 			child.connect('healed', self, '_on_MobHitbox_healed')
 		
@@ -58,7 +59,7 @@ func damage(amount: float, attacker: int) -> void:
 	health -= amount
 	last_attacker = attacker
 	
-	if health <= 0:
+	if health <= 0 and last_attacker == Global.STEAM_ID:
 		var data: Array = [id, randi(), last_attacker, nickname]
 		Global.send_signal(Global.Signals.MOB_KILLED, data)
 

@@ -1,6 +1,6 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
-[ext_resource path="res://assets/addons/kenney_prototype_textures/light/texture_04.png" type="Texture" id=1]
+[ext_resource path="res://scenes/gui/killfeed/killfeed.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/world/world.gd" type="Script" id=2]
 [ext_resource path="res://scenes/world/death_confirmation/death_confirmation.tscn" type="PackedScene" id=3]
 [ext_resource path="res://scenes/terminal/terminal.tscn" type="PackedScene" id=4]
@@ -10,8 +10,13 @@
 
 [sub_resource type="CubeMesh" id=2]
 
+[sub_resource type="StreamTexture" id=4]
+flags = 23
+load_path = "res://.import/texture_04.png-1eb2cb2393e3256847d9422a7cb50db0.s3tc.stex"
+
 [sub_resource type="SpatialMaterial" id=3]
-albedo_texture = ExtResource( 1 )
+albedo_color = Color( 0.521569, 0.521569, 0.521569, 1 )
+albedo_texture = SubResource( 4 )
 uv1_scale = Vector3( 18, 12, 1 )
 
 [node name="World" type="Spatial"]
@@ -33,14 +38,56 @@ shape = SubResource( 1 )
 mesh = SubResource( 2 )
 material = SubResource( 3 )
 
-[node name="Wall" type="StaticBody" parent="."]
+[node name="Floor2" type="StaticBody" parent="."]
 unique_name_in_owner = true
-transform = Transform( -6.97634e-07, -0.1596, 0, 6.91648, -3.02329e-09, 0, 0, 0, 25.9807, 11.6181, 0, 0 )
+transform = Transform( 8.64738, 0, 0, 0, 0.348631, 0, 0, 0, 8.64738, -22.2885, 16.1404, -33.131 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Floor2"]
+shape = SubResource( 1 )
+
+[node name="CSGMesh" type="CSGMesh" parent="Floor2"]
+mesh = SubResource( 2 )
+material = SubResource( 3 )
+
+[node name="Wall" type="StaticBody" parent="."]
+transform = Transform( -3.02329e-07, -0.1596, 0, 6.91648, -6.97634e-09, 0, 0, 0, 38.5018, 11.6181, 0, -8.89928 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Wall"]
 shape = SubResource( 1 )
 
 [node name="CSGMesh" type="CSGMesh" parent="Wall"]
+transform = Transform( 1, 0, 0, -4.54747e-13, 1, 0, 0, 0, 1, 0, 0, 0 )
+mesh = SubResource( 2 )
+material = SubResource( 3 )
+
+[node name="Wall2" type="StaticBody" parent="."]
+transform = Transform( -6.97634e-07, 6.97634e-09, -25.9807, 6.91648, -6.97634e-09, -2.62056e-06, -3.02329e-07, -0.1596, -1.13565e-06, -4.18063, 12.8848, 29.2023 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Wall2"]
+shape = SubResource( 1 )
+
+[node name="CSGMesh" type="CSGMesh" parent="Wall2"]
+transform = Transform( 1, 0, 7.1772e-15, -1.13687e-13, 1, -9.09495e-13, 2.28501e-15, 0, 1, 0, 0, 0 )
+mesh = SubResource( 2 )
+material = SubResource( 3 )
+
+[node name="Wall3" type="StaticBody" parent="."]
+transform = Transform( -6.97634e-07, -0.1596, 0, 6.91648, -3.02329e-09, 0, 0, 0, 25.9807, -29.5001, 19.3401, 0 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Wall3"]
+shape = SubResource( 1 )
+
+[node name="CSGMesh" type="CSGMesh" parent="Wall3"]
+mesh = SubResource( 2 )
+material = SubResource( 3 )
+
+[node name="Wall4" type="StaticBody" parent="."]
+transform = Transform( -1.28969e-06, -2.02411, 0, 29.5047, -8.84766e-08, 0, 0, 0, 1.92661, -21.6125, 16.7732, -33.5687 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Wall4"]
+shape = SubResource( 1 )
+
+[node name="CSGMesh" type="CSGMesh" parent="Wall4"]
 mesh = SubResource( 2 )
 material = SubResource( 3 )
 
@@ -48,12 +95,20 @@ material = SubResource( 3 )
 unique_name_in_owner = true
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.13246, -4.73626 )
 
-[node name="DeathConfirmation" parent="." instance=ExtResource( 3 )]
-
 [node name="DeathCamera" type="Camera" parent="."]
 transform = Transform( -0.250667, 0.250083, -0.935214, 0, 0.966057, 0.25833, 0.968073, 0.0647549, -0.242159, -33.0504, 14.1484, -7.8672 )
+
+[node name="Killfeed" parent="DeathCamera" instance=ExtResource( 1 )]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -350.0
+margin_right = 0.0
+margin_bottom = 203.0
+
+[node name="DeathConfirmation" parent="DeathCamera" instance=ExtResource( 3 )]
+visible = false
 
 [node name="Area" parent="." instance=ExtResource( 5 )]
 transform = Transform( 926.662, 0, 0, 0, 17.2008, 0, 0, 0, 926.662, 0, -47.104, 0 )
 
-[connection signal="respawned" from="DeathConfirmation" to="." method="_on_DeathConfirmation_respawned"]
+[connection signal="respawned" from="DeathCamera/DeathConfirmation" to="." method="_on_DeathConfirmation_respawned"]

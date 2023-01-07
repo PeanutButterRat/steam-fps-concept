@@ -12,10 +12,10 @@ const MIN_ATTACKS_PER_SECOND: float = 0.001
 const MAX_ATTACKS_PER_SECOND: float = 20.0
 const INFINITE_AMMO_ID: int = -1
 
-var _damage: float = 25.0
-var _enabled: bool = true
-var _magazine_capacity: int = 30
-var _reserve_capacity: int = INFINITE_AMMO_ID
+export var _damage: float = 25.0
+export var _enabled: bool = true
+export var _magazine_capacity: int = 30
+export var _reserve_capacity: int = INFINITE_AMMO_ID
 var _current_ammo: int
 
 
