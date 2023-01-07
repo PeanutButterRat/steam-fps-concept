@@ -120,7 +120,7 @@ func _on_Command_op_player(args: Array) -> String:
 		return 'You cannot change your own permissions.'
 	elif id != NO_PLAYER_FOUND:
 		var data: Array = [id]
-		Global.send_signal(Global.Signals.PLAYER_CONSOLE_ENABLE, data)
+		Global.send_signal(Global.Signals.PLAYER_CONSOLE_ENABLED, data)
 		return Console.SUCCESS
 	else:
 		return "No player found with the name of '%s.'" % username 

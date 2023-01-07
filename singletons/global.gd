@@ -1,7 +1,6 @@
 extends Node
 
 
-
 signal player_list_changed(players)
 signal lobby_created(lobby_id)
 signal recieved_lobby_list(lobbies)

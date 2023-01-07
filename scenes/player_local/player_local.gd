@@ -188,15 +188,15 @@ func damage(amount: float, attacker: int) -> void:
 
 func _on_Global_player_teleported(data: Array) -> void:
 	var id: int = data[0]
+	var position: Vector3 = data[1]
 	if id == Global.STEAM_ID:
-		var position: Vector3 = data[1]
 		translation = position
 
 
 func _on_Global_player_console_enabled(data: Array) -> void:
 	var id: int = data[0]
-	if id != Global.STEAM_ID:  # Do not de-op oneself.
-		Console.enabled = not Console.enabled
+	if id == Global.STEAM_ID:  # Do not de-op oneself.
+		Console.enabled = true
 
 
 func _on_Weapon_ammo_changed(current_ammo: int, magazine_capacity: int, reserve_capacity: int) -> void:

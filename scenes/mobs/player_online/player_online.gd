@@ -9,6 +9,7 @@ onready var nametag: Label3D = $'%Nametag'
 func _ready() -> void:
 	._ready()
 	Global.connect('mob_moved', self, '_on_Global_mob_moved')
+	set_nametag(Steam.getFriendPersonaName(id))
 
 
 func set_nametag(string: String) -> void:
