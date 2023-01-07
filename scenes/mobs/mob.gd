@@ -48,7 +48,6 @@ func _ready() -> void:
 func connect_hitboxes(root: Node) -> void:
 	for child in root.get_children():
 		if child is MobHitbox:
-			print(child)
 			child.connect('damaged', self, '_on_MobHitbox_damaged')
 			child.connect('healed', self, '_on_MobHitbox_healed')
 		

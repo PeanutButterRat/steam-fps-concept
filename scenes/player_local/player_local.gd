@@ -68,7 +68,7 @@ var wallrunning: bool = false
 func _ready() -> void:
 	current_weapon.connect('ammo_changed', self, '_on_Weapon_ammo_changed')
 	Global.connect('player_console_enabled', self, '_on_Global_player_console_enabled')
-	Global.connect('player_teleported', self, '_on_Global_player_teleported')
+	Global.connect('mob_teleported', self, '_on_Global_mob_teleported')
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	healthbar.value = health
 	camera.current = true
@@ -186,7 +186,7 @@ func damage(amount: float, attacker: int) -> void:
 	healthbar.value = health
 
 
-func _on_Global_player_teleported(data: Array) -> void:
+func _on_Global_mob_teleported(data: Array) -> void:
 	var id: int = data[0]
 	var position: Vector3 = data[1]
 	if id == Global.STEAM_ID:

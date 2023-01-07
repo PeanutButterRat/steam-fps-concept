@@ -18,9 +18,7 @@ mkdir $FOLDER
 cp ./dependencies/* $FOLDER
 mv ./bin/* $FOLDER
 7z a ./$FOLDER.zip ./$FOLDER
-
-mv ./$FOLDER.zip "~\Desktop\$FOLDER.zip"
 rm -r ./$FOLDER
-rm ./$FOLDER.zip
+
 
 read -p "Press any key to continue."
