@@ -135,8 +135,8 @@ func _physics_process(delta: float) -> void:
 	
 	previous_state = state
 	
-	var data: Array = [transform]
-	Global.send_signal(Global.Signals.PLAYER_MOVED, data)
+	var data: Array = [id, transform]
+	Global.send_signal(Global.Signals.MOB_MOVED, data)
 
 
 func _get_player_state(delta: float) -> int:

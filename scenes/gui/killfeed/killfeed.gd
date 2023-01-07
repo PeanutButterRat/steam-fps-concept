@@ -1,6 +1,7 @@
 extends Panel
 
 
+const MAX_LINE_COUNT: int = 10
 const KILLSTRINGS = [
 	'swagged on',
 	'absolutely destroyed',
@@ -36,3 +37,5 @@ func _on_Global_mob_killed(data: Array) -> void:
 
 func add_entry(attacker: String, victim: String, killstring: String) -> void:
 	text.add_text('%s %s %s.\n' % [attacker, killstring, victim])
+	if text.get_line_count() > MAX_LINE_COUNT:
+		text.remove_line(0)

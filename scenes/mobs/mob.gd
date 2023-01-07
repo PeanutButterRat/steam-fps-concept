@@ -41,17 +41,17 @@ static func create(type: int, mob_id: int) -> Mob:
 
 func _ready() -> void:
 	seed(OS.get_unix_time())
-	connect_hitboxes(self, self)  # DSF search for all mob hitboxes.
+	connect_hitboxes(self)  # DSF search for all mob hitboxes.
 	Global.connect('mob_damaged', self ,'_on_Global_mob_damaged')
 
 
-func connect_hitboxes(root: Mob, current: Node) -> void:
-	for child in current.get_children():
+func connect_hitboxes(root: Node) -> void:
+	for child in root.get_children():
 		if child is MobHitbox:
-			child.connect('damaged', root, '_on_MobHitbox_damaged')
-			child.connect('healed', root, '_on_MobHitbox_healed')
+			child.connect('damaged', self, '_on_MobHitbox_damaged')
+			child.connect('healed', self, '_on_MobHitbox_healed')
 		
-		connect_hitboxes(root, child)
+		connect_hitboxes(child)
 
 
 func damage(amount: float, attacker: int) -> void:

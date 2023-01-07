@@ -12,14 +12,12 @@ signal mob_damaged(data)  # [Mob ID, damage, attacker, critical]
 signal mob_healed(data)  # [Mob ID, health, healer, critical]
 signal mob_killed(data)  # [Mob ID, random integer, attacker, nickname]
 signal mob_moved(data)  # [Mob ID, mob transform]
-signal mob_state_changed(data)
 signal mob_spawned(data)  # [Mob type, mob ID, translation]
 
 signal weapon_fired(data)
 signal weapon_reloaded(data)
 signal weapon_swapped(data)
 
-signal player_moved(data)  # [ID, transform]
 signal player_teleported(data)
 signal player_state_changed(data)
 signal player_console_enabled(data)
@@ -32,12 +30,11 @@ enum Signals {
 	MOB_DAMAGED,
 	MOB_HEALED,
 	MOB_KILLED,
-	MOB_STATE_CHANGED,
+	MOB_MOVED,
 	MOB_SPAWNED,
 	WEAPON_FIRED,
 	WEAPON_RELOADED,
 	WEAPON_SWAPPED,
-	PLAYER_MOVED,
 	PLAYER_TELEPORTED,
 	PLAYER_CONSOLE_ENABLED,
 	PLAYER_STATE_CHANGED,
