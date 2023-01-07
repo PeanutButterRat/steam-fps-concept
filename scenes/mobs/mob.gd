@@ -1,12 +1,12 @@
 class_name Mob extends KinematicBody
 
 
-const MAX_TYPE_ID: int = 5000
+signal died
 
 enum Type {
-	TIMMY = 1,
-	LOCAL_PLAYER = 2
-	ONLINE_PLAYER = 3
+	TIMMY
+	LOCAL_PLAYER
+	ONLINE_PLAYER
 }
 
 const PATHS: Dictionary = {
@@ -14,6 +14,8 @@ const PATHS: Dictionary = {
 	Type.LOCAL_PLAYER: 'res://scenes/player_local/player_local.tscn',
 	Type.ONLINE_PLAYER: 'res://scenes/mobs/player_online/player_online.tscn'
 }
+
+const WORLD_ID: int = 0
 
 export var _max_health: float = 100.0
 
@@ -48,22 +50,23 @@ func connect_hitboxes(root: Mob, current: Node) -> void:
 		if child is MobHitbox:
 			child.connect('damaged', root, '_on_MobHitbox_damaged')
 			child.connect('healed', root, '_on_MobHitbox_healed')
+		
+		connect_hitboxes(root, child)
 
 
 func damage(amount: float, attacker: int) -> void:
 	health -= amount
 	last_attacker = attacker
+	
+	if health <= 0:
+		var data: Array = [id, randi(), last_attacker, nickname]
+		Global.send_signal(Global.Signals.MOB_KILLED, data)
 
 
 func _on_MobHitbox_damaged(amount: float, attacker: int, critical: bool) -> void:
-	damage(amount, attacker)
+	last_attacker = attacker
 	var data: Array = [id, amount, last_attacker, critical]
 	Global.send_signal(Global.Signals.MOB_DAMAGED, data)
-	
-	if health <= 0:
-		data[1] = randi()
-		data.append(nickname)
-		Global.send_signal(Global.Signals.MOB_KILLED, data)
 
 
 func heal(amount: float, healer: int) -> void:
@@ -72,15 +75,9 @@ func heal(amount: float, healer: int) -> void:
 
 
 func _on_MobHitbox_healed(amount: float, healer: int, critical: bool) -> void:
-	heal(amount, healer)
-	
+	last_healer = healer
 	var data: Array = [id, amount, last_healer, critical]
 	Global.send_signal(Global.Signals.MOB_HEALED, data)
-	var mob_id: int = data[0]
-	var mob_transform: Transform = data[1]
-	
-	if mob_id == id:
-		transform = mob_transform
 
 
 func _on_Global_mob_damaged(data: Array) -> void:

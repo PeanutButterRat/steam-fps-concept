@@ -47,7 +47,7 @@ func _on_LineEdit_text_entered(new_text: String) -> void:
 	last_command = new_text
 	var strings: Array = new_text.split(' ', false)
 	var command: String = strings.pop_front()
-	var arguments: PoolStringArray = []
+	var arguments: Array = []
 	
 	for string in strings:
 		arguments.append(string.replace(SPACE_LITERAL_CHARACTER, ' '))

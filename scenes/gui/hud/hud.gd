@@ -35,6 +35,5 @@ func _on_Global_mob_damaged(data: Array) -> void:
 
 func _on_Global_mob_killed(data: Array) -> void:
 	var attacker: int = data[2]
-	
 	if attacker == Global.STEAM_ID:
 		play_hitmarker(Hitmarker.KILL_ANIMATION_NAME)

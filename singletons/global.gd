@@ -8,8 +8,9 @@ signal recieved_lobby_list(lobbies)
 signal chat_event_occured(event)
 
 signal game_started(data)  # []  (lobby)
-signal mob_damaged(data)  # [Mob ID, damage, attacker]
-signal mob_killed(data)  # [Mob ID, random integer, attacker]
+signal mob_damaged(data)  # [Mob ID, damage, attacker, critical]
+signal mob_healed(data)  # [Mob ID, health, healer, critical]
+signal mob_killed(data)  # [Mob ID, random integer, attacker, nickname]
 signal mob_moved(data)  # [Mob ID, mob transform]
 signal mob_state_changed(data)
 signal mob_spawned(data)  # [Mob type, mob ID, translation]
@@ -22,12 +23,14 @@ signal player_moved(data)  # [ID, transform]
 signal player_teleported(data)
 signal player_state_changed(data)
 signal player_console_enabled(data)
+signal game_ended(data)  # []
 
 
 enum Signals {
 	NONE,
 	GAME_STARTED,
 	MOB_DAMAGED,
+	MOB_HEALED,
 	MOB_KILLED,
 	MOB_STATE_CHANGED,
 	MOB_SPAWNED,
@@ -37,7 +40,8 @@ enum Signals {
 	PLAYER_MOVED,
 	PLAYER_TELEPORTED,
 	PLAYER_CONSOLE_ENABLED,
-	PLAYER_STATE_CHANGED
+	PLAYER_STATE_CHANGED,
+	GAME_ENDED
 }
 
 enum Recipient {
@@ -60,6 +64,8 @@ const JOINED_LOBBY_SUCCESSFULLY = 1
 const LOBBY_NAME_KEY: String = 'name'
 const LOBBY_MODE_KEY: String = 'mode'
 const STEAM_ID_REMOTE_KEY: String = 'steam_id_remote'
+const UNIQUE_ID_MAX: int = 50_000
+const UNIQUE_ID_START: int = 5_000
 
 # Steam variables.
 var IS_OWNED: bool = false
@@ -76,7 +82,7 @@ var lobby_max_members: int = 4
 var lobby_name: String = "Unnamed Lobby"
 var lobby_owner: int = 0
 
-var unique_id_counter: int = 1000 setget set_unique_id_counter
+var unique_id_counter: int = UNIQUE_ID_START setget set_unique_id_counter
 
 
 func _ready() -> void:
@@ -104,6 +110,9 @@ func _process(_delta: float) -> void:
 func generate_unique_id() -> int:
 	var id: int = unique_id_counter
 	unique_id_counter += 1
+	if unique_id_counter > UNIQUE_ID_MAX:
+		unique_id_counter = UNIQUE_ID_START
+	
 	return id
 
 
@@ -262,8 +271,7 @@ func _on_Lobby_Match_List(lobbies: Array) -> void:
 
 func _on_Persona_Change(steam_id: int, _flag: int) -> void:
 	Logging.debug('%s had information change, updating lobby list.' % [Steam.getFriendPersonaName(steam_id)])
-	lobby_members = _get_lobby_members()
-	emit_signal('player_list_changed', lobby_members)
+	update_lobby_list()
 
 
 func join_lobby(lob_id: int) -> void:
@@ -341,6 +349,12 @@ func _on_Lobby_Chat_Update(_lobby_id: int, changed_id: int, making_change_id: in
 	lobby_members = _get_lobby_members()
 	emit_signal('player_list_changed', lobby_members)
 	Logging.debug('Lobby chat update: %d (changed_id), %d (making_change_id)' % [changed_id, making_change_id])
+
+
+func update_lobby_list() -> void:
+	lobby_members = _get_lobby_members()
+	lobby_owner = Steam.getLobbyOwner(lobby_id)
+	emit_signal('player_list_changed', lobby_members)
 
 
 func send_signal(signal_id: int, data: Array) -> void:

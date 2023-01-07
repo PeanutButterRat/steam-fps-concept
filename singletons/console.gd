@@ -17,6 +17,9 @@ func execute(command: String, arguments: Array) -> String:
 		return 'You do not have permissions to use the console.'
 	
 	var function: FuncRef = commands.get(command, default)
+	if not function.is_valid():
+		return 'Invalid registry item.'
+	
 	return function.call_func(arguments)  # Return a string denoting success.
 
 

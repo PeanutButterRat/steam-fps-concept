@@ -1,0 +1,63 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://resources/fonts/dynamicfont-default.tres" type="DynamicFont" id=1]
+[ext_resource path="res://resources/fonts/Hack_Regular.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://scenes/world/death_confirmation/death_confirmation.gd" type="Script" id=3]
+
+[sub_resource type="DynamicFont" id=1]
+size = 40
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=2]
+size = 40
+font_data = ExtResource( 2 )
+
+[node name="DeathConfirmation" type="Popup"]
+unique_name_in_owner = true
+visible = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 3 )
+
+[node name="Background" type="Panel" parent="."]
+self_modulate = Color( 1, 1, 1, 0.45098 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="HorizontalContainer" type="HBoxContainer" parent="Background"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VerticalContainer" type="VBoxContainer" parent="Background/HorizontalContainer"]
+margin_left = 774.0
+margin_top = 446.0
+margin_right = 1146.0
+margin_bottom = 633.0
+size_flags_horizontal = 6
+size_flags_vertical = 6
+
+[node name="Label" type="Label" parent="Background/HorizontalContainer/VerticalContainer"]
+margin_right = 372.0
+margin_bottom = 71.0
+custom_fonts/font = ExtResource( 1 )
+text = "You Died!"
+align = 1
+
+[node name="Respawn" type="Button" parent="Background/HorizontalContainer/VerticalContainer"]
+margin_top = 75.0
+margin_right = 372.0
+margin_bottom = 129.0
+custom_fonts/font = SubResource( 1 )
+text = "Respawn"
+
+[node name="Lobby" type="Button" parent="Background/HorizontalContainer/VerticalContainer"]
+margin_top = 133.0
+margin_right = 372.0
+margin_bottom = 187.0
+custom_fonts/font = SubResource( 2 )
+text = "Return to Lobby"
+
+[connection signal="about_to_show" from="." to="." method="_on_DeathConfirmation_about_to_show"]
+[connection signal="popup_hide" from="." to="." method="_on_DeathConfirmation_popup_hide"]
+[connection signal="pressed" from="Background/HorizontalContainer/VerticalContainer/Respawn" to="." method="_on_Respawn_pressed"]
+[connection signal="pressed" from="Background/HorizontalContainer/VerticalContainer/Lobby" to="." method="_on_Lobby_pressed"]

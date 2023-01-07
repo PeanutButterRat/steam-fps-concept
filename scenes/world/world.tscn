@@ -1,8 +1,10 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://assets/addons/kenney_prototype_textures/light/texture_04.png" type="Texture" id=1]
-[ext_resource path="res://scenes/mobs/world/world.gd" type="Script" id=3]
-[ext_resource path="res://scenes/terminal/terminal.tscn" type="PackedScene" id=6]
+[ext_resource path="res://scenes/world/world.gd" type="Script" id=2]
+[ext_resource path="res://scenes/world/death_confirmation/death_confirmation.tscn" type="PackedScene" id=3]
+[ext_resource path="res://scenes/terminal/terminal.tscn" type="PackedScene" id=4]
+[ext_resource path="res://scenes/death_barrier/death_barrier.tscn" type="PackedScene" id=5]
 
 [sub_resource type="BoxShape" id=1]
 
@@ -13,11 +15,11 @@ albedo_texture = ExtResource( 1 )
 uv1_scale = Vector3( 18, 12, 1 )
 
 [node name="World" type="Spatial"]
-script = ExtResource( 3 )
+script = ExtResource( 2 )
 
 [node name="ConsoleLayer" type="CanvasLayer" parent="."]
 
-[node name="Console" parent="ConsoleLayer" instance=ExtResource( 6 )]
+[node name="Console" parent="ConsoleLayer" instance=ExtResource( 4 )]
 process_priority = -1
 
 [node name="Floor" type="StaticBody" parent="."]
@@ -45,3 +47,13 @@ material = SubResource( 3 )
 [node name="Spawn" type="Spatial" parent="."]
 unique_name_in_owner = true
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.13246, -4.73626 )
+
+[node name="DeathConfirmation" parent="." instance=ExtResource( 3 )]
+
+[node name="DeathCamera" type="Camera" parent="."]
+transform = Transform( -0.250667, 0.250083, -0.935214, 0, 0.966057, 0.25833, 0.968073, 0.0647549, -0.242159, -33.0504, 14.1484, -7.8672 )
+
+[node name="Area" parent="." instance=ExtResource( 5 )]
+transform = Transform( 926.662, 0, 0, 0, 17.2008, 0, 0, 0, 926.662, 0, -47.104, 0 )
+
+[connection signal="respawned" from="DeathConfirmation" to="." method="_on_DeathConfirmation_respawned"]

@@ -10,7 +10,7 @@ onready var chat: Control = $'%Chat'
 func _ready() -> void:
 	Global.connect('player_list_changed', self, '_on_Global_player_list_changed')
 	Global.connect('recieved_lobby_list', self, '_on_Global_recieved_lobby_list')
-
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _on_Create_pressed() -> void:
 	if Global.lobby_id == 0:

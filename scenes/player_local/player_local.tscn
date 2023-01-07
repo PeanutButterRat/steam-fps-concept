@@ -227,39 +227,4 @@ margin_left = -403.0
 margin_right = 0.0
 margin_bottom = 189.0
 
-[node name="DeathConfirmation" type="Popup" parent="HUDLayer"]
-visible = true
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="Panel" type="Panel" parent="HUDLayer/DeathConfirmation"]
-self_modulate = Color( 1, 1, 1, 0.45098 )
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="HBoxContainer" type="HBoxContainer" parent="HUDLayer/DeathConfirmation/Panel"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HUDLayer/DeathConfirmation/Panel/HBoxContainer"]
-margin_left = 926.0
-margin_top = 521.0
-margin_right = 994.0
-margin_bottom = 559.0
-size_flags_horizontal = 6
-size_flags_vertical = 6
-
-[node name="Label" type="Label" parent="HUDLayer/DeathConfirmation/Panel/HBoxContainer/VBoxContainer"]
-margin_right = 68.0
-margin_bottom = 14.0
-text = "You Died!"
-
-[node name="Respawn" type="Button" parent="HUDLayer/DeathConfirmation/Panel/HBoxContainer/VBoxContainer"]
-unique_name_in_owner = true
-margin_top = 18.0
-margin_right = 68.0
-margin_bottom = 38.0
-text = "Respawn"
-
 [connection signal="timeout" from="DebugHUD/DebugTimer" to="." method="_on_DebugTimer_timeout"]
-[connection signal="pressed" from="HUDLayer/DeathConfirmation/Panel/HBoxContainer/VBoxContainer/Respawn" to="." method="_on_Respawn_pressed"]

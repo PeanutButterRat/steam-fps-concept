@@ -2,22 +2,25 @@ extends Spatial
 
 
 onready var spawn: Spatial = $'%Spawn'
-
+onready var death_confirmation: Popup = $'%DeathConfirmation'
 var command_spawn: FuncRef = funcref(self, '_on_Command_spawn')
 var command_teleport_player: FuncRef = funcref(self, '_on_Command_teleport_player')
 var command_op_player: FuncRef = funcref(self, '_on_Command_op_player')
+var command_kill_player: FuncRef = funcref(self, '_on_Command_kill')
+
 var mobs: Dictionary = {}
 var local_player: Mob
 
 
 func _ready() -> void:
-	Global.connect('player_list_changed', self, '_update_players')
+	Global.connect('player_list_changed', self, '_on_Global_player_list_changed')
 	Global.connect('mob_spawned', self, '_on_Global_mob_spawned')
 	Global.connect('mob_killed', self, '_on_Global_mob_killed')
 	
 	Console.register('spawn', command_spawn)
 	Console.register('tp', command_teleport_player)
 	Console.register('op', command_op_player)
+	Console.register('kill', command_kill_player)
 	
 
 	var data: Array = [Mob.Type.ONLINE_PLAYER, Global.STEAM_ID, spawn.translation]
@@ -29,11 +32,14 @@ func spawn_mob(type: int, mob_id: int, mob_translation: Vector3) -> Mob:
 	mob.translation = mob_translation
 	mobs[mob_id] = mob
 	add_child(mob)
-	
 	return mob
 
 
+
 func remove_mob(id: int) -> void:
+	if not id in mobs:
+		return
+	
 	var mob: Mob = mobs[id]
 	remove_child(mob)
 	mobs.erase(id)
@@ -74,16 +80,15 @@ func _on_Global_mob_spawned(data: Array) -> void:
 
 func _on_Global_mob_killed(data: Array) -> void:
 	var id: int = data[0]
-	if id in mobs:
-		if id == local_player.id:
-			local_player.kill()
-		else:
-			remove_mob(id)
+	if id == Global.STEAM_ID:
+		death_confirmation.popup()
+	
+	remove_mob(id)
 
 
 func _on_Command_teleport_player(args: Array) -> String:
 	if len(args) != 1:
-		return Console.COMMAND_COUNT_ERROR
+		return Console.COUNT_ERROR
 	
 	var player_name: String = args[0]
 	
@@ -92,7 +97,7 @@ func _on_Command_teleport_player(args: Array) -> String:
 		if player_name == steam_name:
 			var data: Array = [local_player.translation]
 			Global.send_signal(Global.Signals.PLAYER_TELEPORTED, data)
-			return Console.COMMAND_SUCCESS
+			return Console.SUCCESS
 	
 	if player_name == Global.STEAM_USERNAME:
 		return 'You cannot teleport yourself.'
@@ -102,7 +107,7 @@ func _on_Command_teleport_player(args: Array) -> String:
 
 func _on_Command_op_player(args: Array) -> String:
 	if len(args) != 1:
-		return Console.COMMAND_COUNT_ERROR
+		return Console.COUNT_ERROR
 	
 	var player_name: String = args[0]
 
@@ -111,7 +116,7 @@ func _on_Command_op_player(args: Array) -> String:
 		if player_name == steam_name and key != Global.STEAM_ID:
 			var data: Array = [local_player.translation]
 			Global.send_signal(Global.Signals.PLAYER_CONSOLE_ENABLE, data)
-			return Console.COMMAND_SUCCESS
+			return Console.SUCCESS
 	
 	if player_name == Global.STEAM_USERNAME:
 		return 'You cannot change your own permissions.'
@@ -119,26 +124,40 @@ func _on_Command_op_player(args: Array) -> String:
 	return "No player found with the name of '%s.'" % player_name 
 
 
-func _on_LocalPlayer_died() -> void:
-	var data: Array = [Global.STEAM_ID]
-	Global.send_signal(Global.Signals.PLAYER_DIED, data)
-	
-	local_player.translation = spawn.translation
+func _on_Global_player_list_changed(players: Array) -> void:
+	for mob_id in mobs:
+		if mob_id > Global.UNIQUE_ID_MAX and not mob_id in players:
+			remove_mob(mob_id)
 
 
 func _on_Command_kill(args: Array) -> String:
-	for player in args:
-		for steam_id in Global.lobby_members:
-			if mobs[steam_id].nametag == player:
-				Global.send_signal(Global.Signals.PLAYER_DIED, [steam_id])
+	for username in args:
+		var id: int = get_lobby_member_id_from_name(username)
+		if id != 0:
+			var data: Array = [id, randi(), Mob.WORLD_ID]
+			Global.send_signal(Global.Signals.MOB_KILLED, data)
+		else:
+			return "No player by the name of '%s' in the lobby." % [username]
 	
 	if len(args) == 0:
-		local_player.kill()
+		var data: Array = [Global.STEAM_ID, randi(), Mob.WORLD_ID]
+		Global.send_signal(Global.Signals.MOB_KILLED, data)
 	
-	return Console.COMMAND_SUCCESS
+	return Console.SUCCESS
 
-#[Mob type, mob ID, transform]
-func _on_LocalPlayer_respawned() -> void:
-	remove_mob(local_player.id)
+
+func _on_DeathConfirmation_respawned() -> void:
 	var data: Array = [Mob.Type.ONLINE_PLAYER, Global.STEAM_ID, spawn.translation]
 	Global.send_signal(Global.Signals.MOB_SPAWNED, data)
+
+
+func get_lobby_member_id_from_name(username: String) -> int:
+	var members: Dictionary = {}
+	
+	for id in Global.lobby_members:
+		var nickname: String = Steam.getFriendPersonaName(id)
+		members[nickname] = id
+	
+	return members.get(username, 0)
+
+

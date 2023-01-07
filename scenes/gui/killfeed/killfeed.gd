@@ -20,13 +20,15 @@ func _ready():
 
 
 func _on_Global_mob_killed(data: Array) -> void:
-	
 	var victim: String = Steam.getFriendPersonaName(data[0])
 	var killstring_id: int = data[1] % len(KILLSTRINGS)
 	var attacker: String = Steam.getFriendPersonaName(data[2])
 	
+	if attacker.empty():
+		attacker = 'God'
+	
 	if victim.empty():
-		victim = data[4]
+		victim = data[3]
 	
 	add_entry(attacker, victim, KILLSTRINGS[killstring_id])
 

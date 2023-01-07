@@ -59,10 +59,11 @@ var vector: Vector3 = Vector3.ZERO
 var input: Vector3
 
 var weapons: Array = []
-var time_to_wallrun: float = 0.5
+var time_to_wallrun: float = 0.4
 var wallrun_timer: float = time_to_wallrun
 
 var wallrunning: bool = false
+
 
 func _ready() -> void:
 	current_weapon.connect('ammo_changed', self, '_on_Weapon_ammo_changed')
@@ -70,6 +71,7 @@ func _ready() -> void:
 	Global.connect('player_teleported', self, '_on_Global_player_teleported')
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	healthbar.value = health
+	camera.current = true
 
 
 func _physics_process(delta: float) -> void:
@@ -180,8 +182,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func damage(amount: float, attacker: int) -> void:
-	health -= amount
-	last_attacker = attacker
+	.damage(amount, attacker)
 	healthbar.value = health
 
 
@@ -210,16 +211,8 @@ func remove_weapon(weapon: Weapon) -> void:
 	weapons.erase(weapon)
 
 
-func kill() -> void:
-	$HUDLayer/DeathConfirmation.popup()
-
-
 func _on_DebugTimer_timeout():
 	$"%Position".text = str(translation)
 	$"%VelocityLabel".text = str(velocity.length())
 	$"%StateLabel".text = str(State.keys()[previous_state])
 	$'%Raycast'.text = current_weapon._raycast.get_collider().name if current_weapon._raycast.get_collider() else 'Nothing'
-
-
-func _on_Respawn_pressed() -> void:
-	emit_signal('respawned')
